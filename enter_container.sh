@@ -1,0 +1,1 @@
+docker container exec -it SeminarBase2_web bash

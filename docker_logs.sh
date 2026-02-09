@@ -1,0 +1,1 @@
+docker logs SeminarBase2_cloudflare

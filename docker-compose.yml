@@ -1,0 +1,28 @@
+services:
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: SeminarBase2_web
+    volumes:
+      - static_volume:/app/static
+      - ./app/db:/app/db
+    env_file:
+      - .env
+  nginx:
+    build:
+      context: ./infra
+      dockerfile: Dockerfile
+    container_name: SeminarBase2_nginx
+    volumes:
+      - static_volume:/static
+    depends_on:
+      - web
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    container_name: SeminarBase2_cloudflare
+    command: tunnel --no-autoupdate --url http://nginx:8080
+    depends_on:
+      - nginx
+volumes:
+  static_volume:
