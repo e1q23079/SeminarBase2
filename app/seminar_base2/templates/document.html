@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ lecture.title }}{% endblock %}
+
+{% block css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/doc.css' %}">
+<link rel="stylesheet" href="{% static 'highlight/styles/github.css' %}">
+<script src="{% static 'highlight/highlight.min.js' %}"></script>
+<script>hljs.highlightAll();</script>
+<style>
+    .btn_style {
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>{{ lecture.title }}</h1>
+<div>
+    <p>{{ lecture.content | safe }}</p>
+</div>
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-between">
+        <li class="page-item justify-content-start">
+            {% if prevId %}
+            <a class="btn_style page-link" href="/doc/{{ seminar.id }}/{{ prevId.id }}">前へ</a>
+            {% else %}
+            <a class="btn_style page-link disabled" href="#">前へ</a>
+            {% endif %}
+        </li>
+        <li class="page-item justify-content-end">
+            {% if nextId %}
+            <a class="btn_style page-link" href="/doc/{{ seminar.id }}/{{ nextId.id }}">次へ</a>
+            {% else %}
+            <a class="btn_style page-link disabled" href="#">次へ</a>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endblock %}

@@ -1,7 +1,38 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views import View
+from markdownx.utils import markdownify
+from .models import Seminar, Lecture
 
 # Create your views here.
+
+# ホームページのビュー
 class IndexView(View):
     def get(self, request):
         return render(request, 'index.html')
+    
+# セミナーリストページのビュー
+class SeminarListView(View):
+    def get(self, request):
+        seminars = Seminar.objects.all()
+        return render(request, 'seminar_list.html', {'seminars': seminars})
+    
+# レクチャーリストページのビュー
+class LectureListView(View):
+    def get(self, request, seminar_id):
+        seminar = get_object_or_404(Seminar, id=seminar_id)
+        lectures = seminar.lecture_set.all().order_by('id')
+        return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
+    
+# ドキュメントページのビュー
+class DocumentView(View):
+    def get(self, request, seminar_id, lecture_id):
+        seminar = get_object_or_404(Seminar, id=seminar_id)
+        lecture = get_object_or_404(Lecture, id=lecture_id)
+        lecture.content = markdownify(lecture.content)
+        contens = {
+            'lecture': lecture,
+            'seminar': seminar,
+            'nextId': seminar.lecture_set.filter(id__gt=lecture_id).order_by('id').first() if seminar.lecture_set.filter(id__gt=lecture_id).exists() else None,
+            'prevId': seminar.lecture_set.filter(id__lt=lecture_id).order_by('-id').first()
+        }
+        return render(request, 'document.html', contens)

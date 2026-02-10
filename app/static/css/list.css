@@ -1,0 +1,14 @@
+.title {
+    padding: 0.125em 0.5em;
+    border-left: solid 5px #0D6EFD;
+    width: auto;
+}
+
+.title:hover {
+    /*background-color: #F2F2F2;*/
+    background-color: aliceblue;
+}
+
+.description {
+    margin-left: 1em;
+}

@@ -1,7 +1,10 @@
 asgiref==3.11.1
 Django==5.2.11
+django-markdownx==4.0.9
 gunicorn==25.0.3
+Markdown==3.10.2
 packaging==26.0
+pillow==12.1.0
 python-dotenv==1.2.1
 sqlparse==0.5.5
 typing_extensions==4.15.0
