@@ -10,7 +10,7 @@
 {% block content %}
 <h1>「{{ seminar.title }}」のチャプター</h1>
 <p>チャプターを選択してください．</p>
-
+<p class="back-link"><a href="/seminar/{{ seminar.id }}">戻る</a></p>
 {% for lecture in lectures %}
 <p><a href="/doc/{{ seminar.id }}/{{ lecture.id }}" class="title">{{ lecture.title }}</a></p>
 {% endfor %}

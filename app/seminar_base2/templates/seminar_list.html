@@ -10,7 +10,7 @@
 {% block content %}
 <h1>講座一覧</h1>
 <p>受講する講座を選択してください。</p>
-
+<p class="back-link"><a href="/">戻る</a></p>
 {% for seminar in seminars %}
 <p><a href="/lecture/{{ seminar.id }}" class="title">{{ seminar.title }}</a></p>
 <p class="description">{{ seminar.description }}</p>
