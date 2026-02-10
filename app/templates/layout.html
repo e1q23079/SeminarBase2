@@ -27,14 +27,15 @@
                 <div>
                     <div class="d-flex">
                         {% if request.user.is_authenticated %}
-                        <span class="navbar-text userName">{{ request.user.first_name }} {{ request.user.last_name }} さん</span>
-                        <!--
-                        <span class="navbar-text userName">{{ request.user.username }} さん</span>
-                        -->
-                        <form action="/accounts/logout/" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-primary">ログアウト</button>
-                        </form>
+                            {% if request.user.first_name and request.user.last_name %}
+                                <span class="navbar-text userName">{{ request.user.first_name }} {{ request.user.last_name }} さん</span>
+                            {% else %}
+                                <span class="navbar-text userName">{{ request.user.username }} さん</span>
+                            {% endif %}                     
+                            <form action="/accounts/logout/" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">ログアウト</button>
+                            </form>
                         {% else %}
                         <button type="button" class="btn btn-primary"
                             onclick="location.href='/accounts/login/'">ログイン</button>
