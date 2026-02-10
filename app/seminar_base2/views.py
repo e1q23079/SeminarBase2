@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views import View
 from markdownx.utils import markdownify
 from .models import Seminar, Lecture
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
 
@@ -11,20 +12,20 @@ class IndexView(View):
         return render(request, 'index.html')
     
 # セミナーリストページのビュー
-class SeminarListView(View):
+class SeminarListView(LoginRequiredMixin, View):
     def get(self, request):
         seminars = Seminar.objects.all()
         return render(request, 'seminar_list.html', {'seminars': seminars})
     
 # レクチャーリストページのビュー
-class LectureListView(View):
+class LectureListView(LoginRequiredMixin, View):
     def get(self, request, seminar_id):
         seminar = get_object_or_404(Seminar, id=seminar_id)
         lectures = seminar.lecture_set.all().order_by('id')
         return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
     
 # ドキュメントページのビュー
-class DocumentView(View):
+class DocumentView(LoginRequiredMixin, View):
     def get(self, request, seminar_id, lecture_id):
         seminar = get_object_or_404(Seminar, id=seminar_id)
         lecture = get_object_or_404(Lecture, id=lecture_id)
