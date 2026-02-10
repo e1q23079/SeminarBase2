@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: SeminarBase2_web
     volumes:
-      - static_volume:/app/static
+      - static_volume:/app/staticfiles
       - ./app/db:/app/db
     env_file:
       - .env

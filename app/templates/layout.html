@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} | SeminarBase2</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap-5.3.0-dist/css/bootstrap.min.css' %}">
+    <link rel="icon" href="{% static 'img/favicon.png' %}">
+
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    {% block css %}{% endblock %}
+
+</head>
+
+<body>
+
+    {% comment %} <script src="{% static 'js/test.js' %}"></script> {% endcomment %}
+
+    <script src="{% static 'bootstrap-5.3.0-dist/js/bootstrap.min.js' %}"></script>
+    <header>
+        <nav class="navbar bg-primary fixed-top" data-bs-theme="dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">SeminarBase2</a>
+                <div>
+                    <div class="d-flex">
+                        {% if request.user.is_authenticated %}
+                        <span class="navbar-text userName">{{ request.user.first_name }} {{ request.user.last_name }}
+                            さん</span>
+                        <!--
+                        <span class="navbar-text userName">{{ request.user.username }} さん</span>
+                        -->
+                        <form action="/accounts/logout/" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">ログアウト</button>
+                        </form>
+                        {% else %}
+                        <button type="button" class="btn btn-primary"
+                            onclick="location.href='/accounts/login/'">ログイン</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+
+</html>

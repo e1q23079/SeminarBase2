@@ -1,0 +1,14 @@
+.container {
+    margin-top: 20px;
+}
+
+body {
+    padding-top: 50px;
+    color: #0E2841;
+    background-color: rgb(252, 251, 249);
+}
+
+.userName {
+    color: white;
+    padding-right: 10px;
+}
