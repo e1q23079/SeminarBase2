@@ -1,0 +1,35 @@
+{% extends "layout2.html" %}
+{% load static %}
+
+{% block title %}ログイン{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+{% for error in form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+    認証に失敗しました。
+</div>
+{% endfor %}
+<form method="post">
+    {% csrf_token %}
+    <div class="login_form card">
+        <div class="mb-3 d-flex justify-content-center">
+            <img src="{% static 'img/logo.png' %}" width="300px" alt="SeminarBase2ロゴ" class="image_icon">
+        </div>
+        <div class="mb-3">
+            <label for="id_username" class="form-label">ユーザー名</label>
+            <input type="text" name="username" id="id_username" required class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="id_password" class="form-label">パスワード</label>
+            <input type="password" name="password" id="id_password" required class="form-control">
+        </div>
+        <div class="mb-3 d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary login_btn">ログイン</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

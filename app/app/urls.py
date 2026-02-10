@@ -24,6 +24,7 @@ urlpatterns = [
     path('seminar/', views.SeminarListView.as_view(), name='seminar_list'),
     path('lecture/<int:seminar_id>/', views.LectureListView.as_view(), name='lecture_list'),
     path('doc/<int:seminar_id>/<int:lecture_id>/', views.DocumentView.as_view(), name='document'),
+    path('accounts/', include('django.contrib.auth.urls')),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
 ]
