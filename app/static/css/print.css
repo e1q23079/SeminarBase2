@@ -1,0 +1,11 @@
+.container {
+    margin-top: 20px;
+}
+
+body {
+    color: #0E2841;
+    /* background-color: #eaedf0; */
+    /* background-color: #fffcfc; */
+    background-color: rgb(252, 251, 249);
+    padding-bottom: 10px;
+}

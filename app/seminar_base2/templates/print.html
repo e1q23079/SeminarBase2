@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>印刷 | SeminarBase2</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap-5.3.0-dist/css/bootstrap.min.css' %}">
+    <link rel="icon" href="{% static 'img/favicon.png' %}">
+
+    <link rel="stylesheet" href="{% static 'css/doc.css' %}">
+    <link rel="stylesheet" href="{% static 'css/print.css' %}">
+    <link rel="stylesheet" href="{% static 'highlight/styles/github.css' %}">
+    <script src="{% static 'highlight/highlight.min.js' %}"></script>
+    <script>hljs.highlightAll();</script>
+</head>
+
+<body>
+    <script src="{% static 'bootstrap-5.3.0-dist/js/bootstrap.min.js' %}"></script>
+    <header>
+        <nav class="navbar bg-primary" data-bs-theme="dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">SeminarBase2</a>
+                <button type="button" class="btn btn-primary" onclick="window.print();">印刷</button>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        {% for lecture in lectures %}
+        <h1>{{ lecture.title }}</h1>
+        {{ lecture.content|safe }}
+        <hr>
+        {% endfor %}
+    </div>
+    <footer class="bg-light text-center">
+        <div>©2025 SeminarBase2 All Rights Reserved.</div>
+    </footer>
+</body>
+
+</html>

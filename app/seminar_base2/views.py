@@ -37,3 +37,18 @@ class DocumentView(LoginRequiredMixin, View):
             'prevId': seminar.lecture_set.filter(id__lt=lecture_id).order_by('-id').first()
         }
         return render(request, 'document.html', contens)
+    
+# 印刷セミナー一覧
+class PrintListView(LoginRequiredMixin, View):
+    def get(self, request):
+        seminars = Seminar.objects.all()
+        return render(request, 'print_list.html', {'seminars': seminars})
+
+# 印刷ページのビュー
+class PrintView(LoginRequiredMixin, View):
+    def get(self, request, seminar_id):
+        seminar = get_object_or_404(Seminar, id=seminar_id)
+        lectures = seminar.lecture_set.all().order_by('id')
+        for lecture in lectures:
+            lecture.content = markdownify(lecture.content)
+        return render(request, 'print.html', {'lectures': lectures})
