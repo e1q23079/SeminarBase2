@@ -12,7 +12,7 @@ docker compose up -d
 
 ## ウェブアプリケーションのURLを確認する
 ```bash
-sh docker-logs.sh
+sh cloudflare_logs.sh
 ```
 
 ## ウェブアプリケーションの終了
