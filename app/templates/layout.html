@@ -36,7 +36,7 @@
                         <div class="d-flex">
                             {% if request.user.is_authenticated %}
                                 {% if request.user.first_name and request.user.last_name %}
-                                    <span class="navbar-text userName">{{ request.user.first_name }} {{ request.user.last_name }} さん</span>
+                                    <span class="navbar-text userName">{{ request.user.last_name }} {{ request.user.first_name }} さん</span>
                                 {% else %}
                                     <span class="navbar-text userName">{{ request.user.username }} さん</span>
                                 {% endif %}                     
