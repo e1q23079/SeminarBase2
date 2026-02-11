@@ -21,25 +21,34 @@
 
     <script src="{% static 'bootstrap-5.3.0-dist/js/bootstrap.min.js' %}"></script>
     <header>
-        <nav class="navbar bg-primary fixed-top" data-bs-theme="dark">
+        <nav class="navbar bg-primary fixed-top navbar-expand-lg" data-bs-theme="dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/">SeminarBase2</a>
-                <div>
-                    <div class="d-flex">
-                        {% if request.user.is_authenticated %}
-                            {% if request.user.first_name and request.user.last_name %}
-                                <span class="navbar-text userName">{{ request.user.first_name }} {{ request.user.last_name }} さん</span>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    {% block navbar %}
+                    {% endblock %}
+                    <div>
+                        <div class="d-flex">
+                            {% if request.user.is_authenticated %}
+                                {% if request.user.first_name and request.user.last_name %}
+                                    <span class="navbar-text userName">{{ request.user.first_name }} {{ request.user.last_name }} さん</span>
+                                {% else %}
+                                    <span class="navbar-text userName">{{ request.user.username }} さん</span>
+                                {% endif %}                     
+                                <form action="/accounts/logout/" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">ログアウト</button>
+                                </form>
                             {% else %}
-                                <span class="navbar-text userName">{{ request.user.username }} さん</span>
-                            {% endif %}                     
-                            <form action="/accounts/logout/" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary">ログアウト</button>
-                            </form>
-                        {% else %}
-                        <button type="button" class="btn btn-primary"
-                            onclick="location.href='/accounts/login/'">ログイン</button>
-                        {% endif %}
+                            <button type="button" class="btn btn-primary"
+                                onclick="location.href='/accounts/login/'">ログイン</button>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

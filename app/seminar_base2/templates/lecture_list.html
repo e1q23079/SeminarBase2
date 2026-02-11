@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
 {% endblock %}
 
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
 {% block content %}
 <h1>「{{ seminar.title }}」のチャプター</h1>
 <p>チャプターを選択してください。</p>

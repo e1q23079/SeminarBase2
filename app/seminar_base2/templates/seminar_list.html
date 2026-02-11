@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
 {% endblock %}
 
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
 {% block content %}
 <h1>講座一覧</h1>
 <p>受講する講座を選択してください。</p>
