@@ -3,6 +3,7 @@ from django.views import View
 from markdownx.utils import markdownify
 from .models import Seminar, Lecture
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 
 # Create your views here.
 
@@ -47,16 +48,19 @@ class PrintListView(LoginRequiredMixin, View):
 # 印刷ページのビュー
 class PrintView(LoginRequiredMixin, View):
     def get(self, request, seminar_id, lecture_id=None):
+        
+        date = timezone.localdate()
+        
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
         
         # レクチャーのみを印刷
         if(lecture_id):
             lecture = get_object_or_404(Lecture, uuid=lecture_id)
             lecture.content = markdownify(lecture.content)
-            return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar})
+            return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar, 'date': date})
         else:
             # セミナー全体を印刷
             lectures = seminar.lecture_set.all().order_by('id')
             for lecture in lectures:
                 lecture.content = markdownify(lecture.content)
-            return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar})
+            return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'date': date})
