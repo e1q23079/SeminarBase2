@@ -16,7 +16,7 @@
 <p>チャプターを選択してください。</p>
 <p class="back-link"><a href="/seminar/">戻る</a></p>
 {% for lecture in lectures %}
-<p><a href="/doc/{{ seminar.id }}/{{ lecture.id }}" class="title">{{ lecture.title }}</a></p>
+<p><a href="/doc/{{ seminar.uuid }}/{{ lecture.uuid }}" class="title">{{ lecture.title }}</a></p>
 {% endfor %}
 
 {% endblock %}

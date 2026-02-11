@@ -20,21 +20,21 @@ class SeminarListView(LoginRequiredMixin, View):
 # レクチャーリストページのビュー
 class LectureListView(LoginRequiredMixin, View):
     def get(self, request, seminar_id):
-        seminar = get_object_or_404(Seminar, id=seminar_id)
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
         lectures = seminar.lecture_set.all().order_by('id')
         return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
     
 # ドキュメントページのビュー
 class DocumentView(LoginRequiredMixin, View):
     def get(self, request, seminar_id, lecture_id):
-        seminar = get_object_or_404(Seminar, id=seminar_id)
-        lecture = get_object_or_404(Lecture, id=lecture_id)
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        lecture = get_object_or_404(Lecture, uuid=lecture_id)
         lecture.content = markdownify(lecture.content)
         contens = {
             'lecture': lecture,
             'seminar': seminar,
-            'nextId': seminar.lecture_set.filter(id__gt=lecture_id).order_by('id').first() if seminar.lecture_set.filter(id__gt=lecture_id).exists() else None,
-            'prevId': seminar.lecture_set.filter(id__lt=lecture_id).order_by('-id').first()
+            'nextId': seminar.lecture_set.filter(id__gt=lecture.id).order_by('id').first() if seminar.lecture_set.filter(id__gt=lecture.id).exists() else None,
+            'prevId': seminar.lecture_set.filter(id__lt=lecture.id).order_by('-id').first()
         }
         return render(request, 'document.html', contens)
     
@@ -47,7 +47,7 @@ class PrintListView(LoginRequiredMixin, View):
 # 印刷ページのビュー
 class PrintView(LoginRequiredMixin, View):
     def get(self, request, seminar_id):
-        seminar = get_object_or_404(Seminar, id=seminar_id)
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
         lectures = seminar.lecture_set.all().order_by('id')
         for lecture in lectures:
             lecture.content = markdownify(lecture.content)
