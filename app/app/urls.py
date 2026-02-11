@@ -27,6 +27,7 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('print_list/', views.PrintListView.as_view(), name='print_seminar_list'),
     path('print/<uuid:seminar_id>/', views.PrintView.as_view(), name='print'),
+    path('print/<uuid:seminar_id>/<uuid:lecture_id>/', views.PrintView.as_view(), name='print_print'),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
 ]

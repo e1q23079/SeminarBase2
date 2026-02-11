@@ -27,7 +27,7 @@
         <a class="nav-link" href="/lecture/{{ seminar.uuid }}/">チャプター</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/print/{{ seminar.uuid }}/" target="_blank">印刷ビュー</a>
+        <a class="nav-link" href="/print/{{ seminar.uuid }}/{{ lecture.uuid }}" target="_blank">印刷ビュー</a>
     </li>
 </ul>
 {% endblock %}

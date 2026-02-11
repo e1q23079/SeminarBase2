@@ -46,9 +46,17 @@ class PrintListView(LoginRequiredMixin, View):
 
 # 印刷ページのビュー
 class PrintView(LoginRequiredMixin, View):
-    def get(self, request, seminar_id):
+    def get(self, request, seminar_id, lecture_id=None):
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        lectures = seminar.lecture_set.all().order_by('id')
-        for lecture in lectures:
+        
+        # レクチャーのみを印刷
+        if(lecture_id):
+            lecture = get_object_or_404(Lecture, uuid=lecture_id)
             lecture.content = markdownify(lecture.content)
-        return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar})
+            return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar})
+        else:
+            # セミナー全体を印刷
+            lectures = seminar.lecture_set.all().order_by('id')
+            for lecture in lectures:
+                lecture.content = markdownify(lecture.content)
+            return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar})
