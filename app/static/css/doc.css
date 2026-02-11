@@ -46,3 +46,7 @@ blockquote {
     padding: 0.25em;
     background-color: #F2F2F2;
 }
+
+.lecture-content {
+    margin: 1em;
+}

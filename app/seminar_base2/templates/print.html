@@ -29,8 +29,10 @@
     <div class="container">
         {% for lecture in lectures %}
         <h1>{{ lecture.title }}</h1>
-        {{ lecture.content|safe }}
+        <div class="lecture-content">
+            {{ lecture.content|safe }}
         <hr>
+        </div>
         {% endfor %}
     </div>
     <footer class="bg-light text-center">
