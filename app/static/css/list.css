@@ -16,3 +16,9 @@
 .back-link {
     margin: 1em 0;
 }
+
+.title2 {
+    padding: 0.125em 0.5em;
+    border-left: solid 5px #0D6EFD;
+    width: auto;
+}
