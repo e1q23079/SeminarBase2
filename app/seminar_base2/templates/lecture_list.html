@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}「{{ seminar.title }}」のチャプター選択{% endblock %}
+{% block title %}{{ seminar.title }}{% endblock %}
 
 {% block css %}
 {% load static %}
@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-<h1>「{{ seminar.title }}」のチャプター</h1>
+<h1>{{ seminar.title }}</h1>
 <p>チャプターを選択してください。</p>
 <p class="back-link"><a href="/seminar/">戻る</a></p>
 {% for lecture in lectures %}
