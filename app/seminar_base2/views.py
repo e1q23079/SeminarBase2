@@ -51,4 +51,4 @@ class PrintView(LoginRequiredMixin, View):
         lectures = seminar.lecture_set.all().order_by('id')
         for lecture in lectures:
             lecture.content = markdownify(lecture.content)
-        return render(request, 'print.html', {'lectures': lectures})
+        return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar})
