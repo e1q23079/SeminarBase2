@@ -137,4 +137,5 @@ MARKDOWNX_MARKDOWN_EXTENSIONS = [
     'markdown.extensions.extra',
     'markdown.extensions.codehilite',
     'markdown.extensions.nl2br',
+    'markdown.extensions.attr_list',
 ]
