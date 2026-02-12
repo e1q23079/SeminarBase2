@@ -23,12 +23,15 @@ class SeminarListView(LoginRequiredMixin, View):
 class MemberAuthorizationMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         
+        # ログインしていない場合はログインページへリダイレクト
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         
+        # 管理者は全てのセミナーにアクセス可能
         if request.user.is_superuser:
             return super().dispatch(request, *args, **kwargs)
         
+        # セミナーIDをURLから取得して、参加者かどうかを確認
         seminar_id = kwargs.get('seminar_id')
         
         if seminar_id:
