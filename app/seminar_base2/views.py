@@ -3,6 +3,7 @@ from django.views import View
 from markdownx.utils import markdownify
 from .models import Seminar, Lecture
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 import re
 
 # Create your views here.
@@ -17,16 +18,32 @@ class SeminarListView(LoginRequiredMixin, View):
     def get(self, request):
         seminars = Seminar.objects.all()
         return render(request, 'seminar_list.html', {'seminars': seminars})
+ 
+# 参加者認証ミックスイン
+class MemberAuthorizationMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        
+        seminar_id = kwargs.get('seminar_id')
+        
+        if seminar_id:
+            seminar = get_object_or_404(Seminar, uuid=seminar_id)
+            if not seminar.members_set.filter(user=request.user).exists():
+                raise PermissionDenied
+        
+        return super().dispatch(request, *args, **kwargs) 
     
 # レクチャーリストページのビュー
-class LectureListView(LoginRequiredMixin, View):
+class LectureListView(MemberAuthorizationMixin, View):
     def get(self, request, seminar_id):
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
         lectures = seminar.lecture_set.all().order_by('id')
         return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
     
 # ドキュメントページのビュー
-class DocumentView(LoginRequiredMixin, View):
+class DocumentView(MemberAuthorizationMixin, View):
     def get(self, request, seminar_id, lecture_id):
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
         lecture = get_object_or_404(Lecture, uuid=lecture_id)
@@ -47,7 +64,7 @@ class PrintListView(LoginRequiredMixin, View):
         return render(request, 'print_list.html', {'seminars': seminars})
 
 # 印刷ページのビュー
-class PrintView(LoginRequiredMixin, View):
+class PrintView(MemberAuthorizationMixin, View):
     def get(self, request, seminar_id, lecture_id=None):
         
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
