@@ -26,6 +26,9 @@ class MemberAuthorizationMixin(LoginRequiredMixin):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
         
+        if request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
+        
         seminar_id = kwargs.get('seminar_id')
         
         if seminar_id:
