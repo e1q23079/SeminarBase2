@@ -19,6 +19,7 @@ admin.site.register(Lecture, LectureAdmin)
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
     
+    # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "user":
             kwargs["queryset"] = User.objects.filter(is_staff=False, is_superuser=False)
