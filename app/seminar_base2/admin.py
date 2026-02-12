@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Seminar, Lecture, Members
+from .models import Seminar, Lecture, Members, User
 
 # Register your models here.
 
@@ -18,6 +18,12 @@ admin.site.register(Lecture, LectureAdmin)
 # 参加者モデルの管理画面設定
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            kwargs["queryset"] = User.objects.filter(is_staff=False, is_superuser=False)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
 admin.site.register(Members, MembersAdmin)

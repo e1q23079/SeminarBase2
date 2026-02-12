@@ -63,5 +63,11 @@ class Members(models.Model):
         
         ordering = ['user__username']
         
+    # 保存時にスタッフユーザーやスーパーユーザーを除外
+    def save(self, *args, **kwargs):
+        if self.user.is_staff or self.user.is_superuser:
+            raise ValueError("Staff users and superusers cannot be added as seminar members.")
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return self.user.username
