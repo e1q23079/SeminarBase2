@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Seminar, Lecture
+from .models import Seminar, Lecture, Members
 
 # Register your models here.
 
@@ -14,7 +14,14 @@ class LectureAdmin(admin.ModelAdmin):
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
 admin.site.register(Lecture, LectureAdmin)
-    
+
+# 参加者モデルの管理画面設定
+class MembersAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'seminar')
+    # セミナーでフィルタリングできるように設定
+    list_filter = ('seminar',)
+admin.site.register(Members, MembersAdmin)
+
 # 管理サイトのタイトルを変更
 admin.site.site_header = "SeminarBase2 管理者サイト"
 admin.site.site_title = "SeminarBase2"
