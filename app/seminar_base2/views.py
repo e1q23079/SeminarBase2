@@ -71,6 +71,10 @@ class DocumentView(MemberAuthorizationMixin, View):
 class PrintListView(LoginRequiredMixin, View):
     def get(self, request):
         seminars = Seminar.objects.all()
+        
+        for seminar in seminars:
+            seminar.is_member = seminar.members_set.filter(user=request.user).exists() or request.user.is_superuser
+            
         return render(request, 'print_list.html', {'seminars': seminars})
 
 # 印刷ページのビュー
