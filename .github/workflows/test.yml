@@ -29,6 +29,10 @@ jobs:
         working-directory: app
         run: pip install -r requirements.txt
 
+      - name: Run check
+        working-directory: app
+        run: python3 manage.py check
+
       - name: Run test
         working-directory: app
         run: python3 manage.py test
