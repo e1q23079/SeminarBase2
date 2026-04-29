@@ -39,7 +39,7 @@ class Doc:
             self.lectures[now_chapter-1]['next'] = None
             
         for lecture in self.lectures:
-            lecture['content'] = bleach.clean(lecture['content'], tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'code', 'pre'], attributes={'a': ['href', 'title']}, strip=True)
+            lecture['content'] = bleach.clean(lecture['content'], tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'code', 'pre', 'table', 'thead', 'tbody', 'tr', 'th', 'td'], attributes={'a': ['href', 'title']}, strip=True)
         
     def get_lectures(self):
         '''
