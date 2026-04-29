@@ -266,16 +266,7 @@ class DocTests(TestCase):
         '''
         テスト用のドキュメントを作成する
         '''
-        self.doc = Doc(
-            '''
-            <h1>Test Lecture</h1>
-            <p>Test Content</p>
-            <h1>Test Lecture2</h1>
-            <p>Test Content2</p>
-            <h1>Test Lecture3</h1>
-            <p>Test Content3</p>
-            '''
-        )
+        self.doc = Doc("# Test Lecture\nTest Content\n# Test Lecture2\nTest Content2\n# Test Lecture3\nTest Content3\n")
 
     def test_get_lectures(self):
         '''

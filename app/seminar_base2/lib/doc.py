@@ -29,9 +29,9 @@ class Doc:
                 temp_content = ""
             else:
                 if temp_content is not None:
-                    temp_content += str(element)
+                    temp_content += str(element).strip()
                 else:
-                    temp_content = str(element)
+                    temp_content = str(element).strip()
                     
         if temp_content is not None:
             self.lectures.append({'title': title, 'content': temp_content, 'chapter': now_chapter})
