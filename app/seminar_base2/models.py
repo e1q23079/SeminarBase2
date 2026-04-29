@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-from markdownx.models import MarkdownxField
+# from markdownx.models import MarkdownxField
 
 # Create your models here.
 
@@ -13,6 +13,9 @@ class Seminar(models.Model):
     title = models.CharField(max_length=200,verbose_name="セミナー名")
     description = models.TextField(verbose_name="詳細")
     
+    # content = MarkdownxField(verbose_name="コンテンツ", blank=True)
+    content = models.TextField(verbose_name="コンテンツ", blank=True)
+    
     class Meta:
         verbose_name = "セミナー"
         verbose_name_plural = "「セミナー」 一覧"
@@ -23,22 +26,22 @@ class Seminar(models.Model):
         return self.title
     
 # レクチャーモデル
-class Lecture(models.Model):
+# class Lecture(models.Model):
     
-    uuid = models.UUIDField(default=uuid.uuid4,unique=True, editable=False, verbose_name="UUID")
+#     uuid = models.UUIDField(default=uuid.uuid4,unique=True, editable=False, verbose_name="UUID")
     
-    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
-    title = models.CharField(max_length=200,verbose_name="レクチャー名")
-    content = MarkdownxField(verbose_name="コンテンツ")
+#     seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
+#     title = models.CharField(max_length=200,verbose_name="レクチャー名")
+#     content = MarkdownxField(verbose_name="コンテンツ")
 
-    class Meta:
-        verbose_name = "レクチャー"
-        verbose_name_plural = "「レクチャー」 一覧"
+#     class Meta:
+#         verbose_name = "レクチャー"
+#         verbose_name_plural = "「レクチャー」 一覧"
         
-        ordering = ['id']
+#         ordering = ['id']
         
-    def __str__(self):
-        return self.title
+#     def __str__(self):
+#         return self.title
     
 # 参加者モデル
 class Members(models.Model):

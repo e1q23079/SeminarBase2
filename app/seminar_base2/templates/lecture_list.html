@@ -14,9 +14,10 @@
 {% block content %}
 <h1>{{ seminar.title }}</h1>
 <p>チャプターを選択してください。</p>
-<p class="back-link"><a href="/seminar/">戻る</a></p>
+<p class="back-link"><a href="/seminar">戻る</a></p>
 {% for lecture in lectures %}
-<p><a href="/doc/{{ seminar.uuid }}/{{ lecture.uuid }}" class="title">{{ lecture.title }}</a></p>
+{% comment %} <p><a href="/doc/{{ seminar.uuid }}/{{ lecture.chapter }}" class="title">{{ lecture.title }}</a></p> {% endcomment %}
+<p><a href="/doc/{{ seminar.uuid }}?lec={{ lecture.chapter }}" class="title">{{ lecture.title }}</a></p>
 {% endfor %}
 
 {% endblock %}
