@@ -8,6 +8,7 @@ class Doc:
         self.lectures : list = []
         
         temp_content = None
+        title = "無題"
         now_chapter = 1
         
         parse = BeautifulSoup(content, 'html.parser')
