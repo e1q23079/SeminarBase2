@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import View
-from markdownx.utils import markdownify
+# from markdownx.utils import markdownify
 from .models import Seminar
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -54,8 +54,7 @@ class LectureListView(MemberAuthorizationMixin, View):
         # lectures = seminar.lecture_set.all().order_by('id')
         # return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        content_html = markdownify(seminar.content)
-        doc = Doc(content_html)
+        doc = Doc(seminar.content)
         lectures = doc.get_lecture_titles()
         return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
     
@@ -78,8 +77,7 @@ class DocumentView(MemberAuthorizationMixin, View):
         except (ValueError, TypeError):
             raise Http404("Invalid lecture ID")
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        content_html = markdownify(seminar.content)
-        doc = Doc(content_html)
+        doc = Doc(seminar.content)
         lecture = doc.get_lecture(lec_id)
         if not lecture:
             raise Http404("Lecture not found")
@@ -115,10 +113,8 @@ class PrintView(MemberAuthorizationMixin, View):
                 lecture_id = int(lec_query)
             except ValueError:
                 raise Http404("Invalid lecture ID")
- 
-        content_html = markdownify(seminar.content)
         
-        doc = Doc(content_html)
+        doc = Doc(seminar.content)
         
         # レクチャーのみを印刷
         if(lecture_id or lecture_id == 0):

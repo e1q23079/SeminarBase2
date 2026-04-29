@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'seminar_base2.apps.SeminarBase2Config',
-    'markdownx',
+    # 'markdownx',
 ]
 
 MIDDLEWARE = [
@@ -133,9 +133,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-MARKDOWNX_MARKDOWN_EXTENSIONS = [
-    'markdown.extensions.extra',
-    'markdown.extensions.codehilite',
-    'markdown.extensions.nl2br',
-    'markdown.extensions.attr_list',
-]
+# MARKDOWNX_MARKDOWN_EXTENSIONS = [
+#     'markdown.extensions.extra',
+#     'markdown.extensions.codehilite',
+#     'markdown.extensions.nl2br',
+#     'markdown.extensions.attr_list',
+# ]

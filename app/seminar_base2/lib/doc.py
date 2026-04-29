@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup
+import markdown
+import bleach
 
 class Doc:
     def __init__(self, content: str):
@@ -11,7 +13,9 @@ class Doc:
         title = "無題"
         now_chapter = 1
         
-        parse = BeautifulSoup(content, 'html.parser')
+        html_content = markdown.markdown(content, extensions=['extra', 'codehilite', 'nl2br', 'attr_list'])
+        
+        parse = BeautifulSoup(html_content, 'html.parser')
         
         for element in parse.contents:
             if element.name == 'h1':
@@ -33,6 +37,9 @@ class Doc:
             self.lectures.append({'title': title, 'content': temp_content, 'chapter': now_chapter})
             self.lectures[now_chapter-1]['prev'] = now_chapter - 1 if now_chapter > 1 else None
             self.lectures[now_chapter-1]['next'] = None
+            
+        for lecture in self.lectures:
+            lecture['content'] = bleach.clean(lecture['content'], tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li', 'code', 'pre'], attributes={'a': ['href', 'title']}, strip=True)
         
     def get_lectures(self):
         '''
