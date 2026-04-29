@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-from markdownx.models import MarkdownxField
+# from markdownx.models import MarkdownxField
 
 # Create your models here.
 
@@ -13,7 +13,8 @@ class Seminar(models.Model):
     title = models.CharField(max_length=200,verbose_name="セミナー名")
     description = models.TextField(verbose_name="詳細")
     
-    content = MarkdownxField(verbose_name="コンテンツ", blank=True)
+    # content = MarkdownxField(verbose_name="コンテンツ", blank=True)
+    content = models.TextField(verbose_name="コンテンツ", blank=True)
     
     class Meta:
         verbose_name = "セミナー"
