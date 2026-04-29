@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from markdownx.utils import markdownify
-from .models import Seminar, Lecture
+from .models import Seminar
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 import re
+from django.http import Http404
+from .lib.doc import Doc
 
 # Create your views here.
 
@@ -48,24 +50,49 @@ class MemberAuthorizationMixin(LoginRequiredMixin):
 # レクチャーリストページのビュー
 class LectureListView(MemberAuthorizationMixin, View):
     def get(self, request, seminar_id):
+        # seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # lectures = seminar.lecture_set.all().order_by('id')
+        # return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        lectures = seminar.lecture_set.all().order_by('id')
+        content_html = markdownify(seminar.content)
+        doc = Doc(content_html)
+        lectures = doc.get_lecture_titles()
         return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
     
 # ドキュメントページのビュー
 class DocumentView(MemberAuthorizationMixin, View):
-    def get(self, request, seminar_id, lecture_id):
+    def get(self, request, seminar_id):
+        # seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # lecture = get_object_or_404(Lecture, uuid=lecture_id)
+        # lecture.content = markdownify(lecture.content)
+        # lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
+        # contens = {
+        #     'lecture': lecture,
+        #     'seminar': seminar,
+        #     'nextId': seminar.lecture_set.filter(id__gt=lecture.id).order_by('id').first() if seminar.lecture_set.filter(id__gt=lecture.id).exists() else None,
+        #     'prevId': seminar.lecture_set.filter(id__lt=lecture.id).order_by('-id').first()
+        # }
+        # return render(request, 'document.html', contens)
+        try:
+            lec_id = int(request.GET.get('lec', 0))
+        except (ValueError, TypeError):
+            raise Http404("Invalid lecture ID")
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        lecture = get_object_or_404(Lecture, uuid=lecture_id)
-        lecture.content = markdownify(lecture.content)
-        lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
-        contens = {
+        content_html = markdownify(seminar.content)
+        doc = Doc(content_html)
+        lecture = doc.get_lecture(lec_id)
+        if not lecture:
+            raise Http404("Lecture not found")
+        lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
+        contents = {
             'lecture': lecture,
             'seminar': seminar,
-            'nextId': seminar.lecture_set.filter(id__gt=lecture.id).order_by('id').first() if seminar.lecture_set.filter(id__gt=lecture.id).exists() else None,
-            'prevId': seminar.lecture_set.filter(id__lt=lecture.id).order_by('-id').first()
+            'nextId': lecture['next'],
+            'prevId': lecture['prev']
         }
-        return render(request, 'document.html', contens)
+        return render(request, 'document.html', contents)
+        
+        
     
 # 印刷セミナー一覧
 class PrintListView(LoginRequiredMixin, View):
@@ -82,17 +109,36 @@ class PrintView(MemberAuthorizationMixin, View):
     def get(self, request, seminar_id, lecture_id=None):
         
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        lec_query = request.GET.get('lec')
+        if lec_query:
+            try:
+                lecture_id = int(lec_query)
+            except ValueError:
+                raise Http404("Invalid lecture ID")
+ 
+        content_html = markdownify(seminar.content)
+        
+        doc = Doc(content_html)
         
         # レクチャーのみを印刷
-        if(lecture_id):
-            lecture = get_object_or_404(Lecture, uuid=lecture_id)
-            lecture.content = markdownify(lecture.content)
-            lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
+        if(lecture_id or lecture_id == 0):
+            # lecture = get_object_or_404(Lecture, uuid=lecture_id)
+            # lecture.content = markdownify(lecture.content)
+            # lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
+            # return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar, 'lec':True})
+            lecture = doc.get_lecture(lecture_id)
+            if not lecture:
+                raise Http404("Lecture not found")
+            lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
             return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar, 'lec':True})
         else:
             # セミナー全体を印刷
-            lectures = seminar.lecture_set.all().order_by('id')
+            # lectures = seminar.lecture_set.all().order_by('id')
+            # for lecture in lectures:
+            #     lecture.content = markdownify(lecture.content)
+            #     lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
+            # return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
+            lectures = doc.get_lectures()
             for lecture in lectures:
-                lecture.content = markdownify(lecture.content)
-                lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
+                lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
             return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})

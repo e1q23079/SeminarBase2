@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Seminar, Lecture, Members, User
+from .models import Seminar, Members, User
 
 # Register your models here.
 
@@ -9,11 +9,11 @@ class SeminarAdmin(admin.ModelAdmin):
 admin.site.register(Seminar, SeminarAdmin)
 
 # レクチャーモデルの管理画面設定
-class LectureAdmin(admin.ModelAdmin):
-    list_display = ('title',)
-    # セミナーでフィルタリングできるように設定
-    list_filter = ('seminar',)
-admin.site.register(Lecture, LectureAdmin)
+# class LectureAdmin(admin.ModelAdmin):
+#     list_display = ('title',)
+#     # セミナーでフィルタリングできるように設定
+#     list_filter = ('seminar',)
+# admin.site.register(Lecture, LectureAdmin)
 
 # 参加者モデルの管理画面設定
 class MembersAdmin(admin.ModelAdmin):

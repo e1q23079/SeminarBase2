@@ -19,15 +19,15 @@ from django.urls import path, include
 from seminar_base2 import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin', admin.site.urls),
     path('', views.IndexView.as_view(), name='index'),
-    path('seminar/', views.SeminarListView.as_view(), name='seminar_list'),
-    path('lecture/<uuid:seminar_id>/', views.LectureListView.as_view(), name='lecture_list'),
-    path('doc/<uuid:seminar_id>/<uuid:lecture_id>/', views.DocumentView.as_view(), name='document'),
+    path('seminar', views.SeminarListView.as_view(), name='seminar_list'),
+    path('lecture/<uuid:seminar_id>', views.LectureListView.as_view(), name='lecture_list'),
+    path('doc/<uuid:seminar_id>', views.DocumentView.as_view(), name='document'),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('print-list/', views.PrintListView.as_view(), name='print_seminar_list'),
-    path('print/<uuid:seminar_id>/', views.PrintView.as_view(), name='print'),
-    path('print/<uuid:seminar_id>/<uuid:lecture_id>/', views.PrintView.as_view(), name='print_print'),
+    path('print-list', views.PrintListView.as_view(), name='print_seminar_list'),
+    path('print/<uuid:seminar_id>', views.PrintView.as_view(), name='print'),
+    # path('print/<uuid:seminar_id>/<int:lecture_id>/', views.PrintView.as_view(), name='print_print'),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
 ]

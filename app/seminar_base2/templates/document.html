@@ -21,13 +21,14 @@
         <a class="nav-link" href="/">トップ</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/seminar/">講座一覧</a>
+        <a class="nav-link" href="/seminar">講座一覧</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/lecture/{{ seminar.uuid }}/">チャプター</a>
+        <a class="nav-link" href="/lecture/{{ seminar.uuid }}">チャプター</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="/print/{{ seminar.uuid }}/{{ lecture.uuid }}" target="_blank">印刷ビュー</a>
+        {% comment %} <a class="nav-link" href="/print/{{ seminar.uuid }}/{{ lecture.uuid }}" target="_blank">印刷ビュー</a> {% endcomment %}
+        <a class="nav-link" href="/print/{{ seminar.uuid }}?lec={{ lecture.chapter }}" target="_blank">印刷ビュー</a>
     </li>
 </ul>
 {% endblock %}
@@ -41,14 +42,16 @@
     <ul class="pagination justify-content-between">
         <li class="page-item justify-content-start">
             {% if prevId %}
-            <a class="btn_style page-link" href="/doc/{{ seminar.uuid }}/{{ prevId.uuid }}">前へ</a>
+            {% comment %} <a class="btn_style page-link" href="/doc/{{ seminar.uuid }}/{{ prevId.uuid }}">前へ</a> {% endcomment %}
+            <a class="btn_style page-link" href="/doc/{{ seminar.uuid }}?lec={{ prevId }}">前へ</a>
             {% else %}
             <a class="btn_style page-link disabled" href="#">前へ</a>
             {% endif %}
         </li>
         <li class="page-item justify-content-end">
             {% if nextId %}
-            <a class="btn_style page-link" href="/doc/{{ seminar.uuid }}/{{ nextId.uuid }}">次へ</a>
+            {% comment %} <a class="btn_style page-link" href="/doc/{{ seminar.uuid }}/{{ nextId.uuid }}">次へ</a> {% endcomment %}
+            <a class="btn_style page-link" href="/doc/{{ seminar.uuid }}?lec={{ nextId }}">次へ</a>
             {% else %}
             <a class="btn_style page-link disabled" href="#">次へ</a>
             {% endif %}
