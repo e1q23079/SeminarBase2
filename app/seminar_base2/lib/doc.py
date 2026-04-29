@@ -12,7 +12,7 @@ class Doc:
         
         parse = BeautifulSoup(content, 'html.parser')
         
-        for element in parse.find_all():
+        for element in parse.contents:
             if element.name == 'h1':
                 if temp_content:
                     self.lectures.append({'title': title, 'content': temp_content, 'chapter': now_chapter})
