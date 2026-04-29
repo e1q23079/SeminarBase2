@@ -14,20 +14,21 @@ class Doc:
         
         for element in parse.contents:
             if element.name == 'h1':
-                if temp_content:
+                if temp_content is not None:
                     self.lectures.append({'title': title, 'content': temp_content, 'chapter': now_chapter})
                     self.lectures[now_chapter-1]['prev'] = now_chapter - 1 if now_chapter > 1 else None
                     self.lectures[now_chapter-1]['next'] = now_chapter + 1
                     now_chapter += 1
                     temp_content = None
                 title = element.get_text()
+                temp_content = ""
             else:
                 if temp_content is not None:
                     temp_content += str(element)
                 else:
                     temp_content = str(element)
                     
-        if temp_content:
+        if temp_content is not None:
             self.lectures.append({'title': title, 'content': temp_content, 'chapter': now_chapter})
             self.lectures[now_chapter-1]['prev'] = now_chapter - 1 if now_chapter > 1 else None
             self.lectures[now_chapter-1]['next'] = None
