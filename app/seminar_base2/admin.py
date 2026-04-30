@@ -6,7 +6,14 @@ from django.utils.safestring import mark_safe
 
 # セミナーモデルの管理画面設定
 class SeminarAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description')
+    list_display = ('title', 'seminar_link', 'description')
+    
+    # セミナーURLを表示するためのメソッド
+    def seminar_link(self, obj):
+        if obj.uuid:
+            return mark_safe(f'<a href="/lecture/{obj.uuid}" target="_blank">セミナーを表示</a>')
+        return "No Seminar"
+    seminar_link.short_description = "セミナーURL"
 admin.site.register(Seminar, SeminarAdmin)
 
 # レクチャーモデルの管理画面設定
