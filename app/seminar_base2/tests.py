@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Seminar, Members
+from .models import Seminar, Members, File
 
 # Create your tests here.
 
@@ -319,3 +319,48 @@ class DocTests(TestCase):
             "next": 3
         })
         self.assertEqual(self.doc.get_lecture(4), None)
+
+
+# ファイルプロテクトのテスト
+class PrtectFileTests(TestCase):
+    def setUp(self):
+        '''
+        テスト用のセミナーを作成する
+        '''
+        self.seminar = Seminar.objects.create(title='Test Seminar', description='Test Description',  content='# Test Content\nTest Content')
+        self.file = File.objects.create(seminar=self.seminar, name='Test File', file='test.txt')
+        
+    def test_protect_file_not_login(self):
+        '''
+        ファイルが保護されているかのテスト（ログインしていない場合）
+        '''
+        response = self.client.get(f'/file/{self.file.uuid}')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, f'/accounts/login/?next=/file/{self.file.uuid}')
+
+    def test_protect_file_login_not_member(self):
+        '''
+        ファイルが保護されているかのテスト（ログインしている場合，受講者ではないユーザー）
+        '''
+        User.objects.create_user(username='testuser', password='testpassword')
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/file/{self.file.uuid}')
+        self.assertEqual(response.status_code, 403)
+        
+    def test_protect_file_login_member(self):
+        '''
+        ファイルが保護されているかのテスト（ログインしている場合，受講者であるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Members.objects.create(user=user, seminar=self.seminar)
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(f'/file/{self.file.uuid}')
+        self.assertEqual(response.status_code, 200)
+
+    def test_protect_file_direct_access(self):
+        '''
+        ファイルに直接アクセスした場合のテスト
+        '''
+        response = self.client.get(f'/media/seminar_base2/files/{self.file.name}')
+        self.assertEqual(response.status_code, 404)
