@@ -1,19 +1,25 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 # from markdownx.utils import markdownify
-from .models import Seminar
+from .models import Seminar, File
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 import re
-from django.http import Http404
+from django.http import Http404, HttpResponse, FileResponse
 from .lib.doc import Doc
+from django.conf import settings
+import mimetypes
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Create your views here.
 
 # ホームページのビュー
 class IndexView(View):
     def get(self, request):
-        return render(request, 'index.html')
+        return render(request, 'index.html', {'edition': os.getenv('EDITION', None)})
     
 # セミナーリストページのビュー
 class SeminarListView(LoginRequiredMixin, View):
@@ -138,3 +144,21 @@ class PrintView(MemberAuthorizationMixin, View):
             for lecture in lectures:
                 lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
             return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
+
+# ファイル保護ビュー
+class ProtectFileView(LoginRequiredMixin, View):
+    def get(self, request, uuid):
+        file = get_object_or_404(File, uuid=uuid)
+        
+        if not file.seminar.members_set.filter(user=request.user).exists() and not request.user.is_superuser:
+            raise PermissionDenied
+        
+        if settings.DEBUG:
+            return FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
+        
+        mime_type, _ = mimetypes.guess_type(file.file.name)
+        
+        response = HttpResponse()
+        response['Content-Type'] = mime_type or 'application/octet-stream'
+        response['X-Accel-Redirect'] = f'/protect/{file.file.name}'
+        return response

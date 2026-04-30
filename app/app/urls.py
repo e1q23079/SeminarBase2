@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from seminar_base2 import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin', admin.site.urls),
@@ -30,4 +32,8 @@ urlpatterns = [
     # path('print/<uuid:seminar_id>/<int:lecture_id>/', views.PrintView.as_view(), name='print_print'),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
+    path('file/<uuid:uuid>', views.ProtectFileView.as_view(), name='file_view'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

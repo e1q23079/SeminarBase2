@@ -8,6 +8,9 @@
 
 {% block content %}
 <h1>「SeminarBase2」へようこそ</h1>
+{% if edition %}
+    <p class="edition">SeminarBase2 for  {{ edition }}</p>
+{% endif %}
 <p>トップページです。</p>
 <p><a href="/seminar">講座一覧</a></p>
 <p><a href="/print-list">資料印刷</a></p>

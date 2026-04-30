@@ -7,6 +7,7 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - ./app/db:/app/db
+      - ./app/media:/app/media
     env_file:
       - .env
   nginx:
@@ -16,6 +17,7 @@ services:
     container_name: SeminarBase2_nginx
     volumes:
       - static_volume:/static
+      - ./app/media:/app/media
     depends_on:
       - web
   cloudflare:
