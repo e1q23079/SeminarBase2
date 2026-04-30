@@ -2,6 +2,7 @@ asgiref==3.11.1
 beautifulsoup4==4.14.3
 bleach==6.3.0
 Django==5.2.11
+django-cleanup==9.0.0
 django-markdownx==4.0.9
 gunicorn==25.0.3
 Markdown==3.10.2

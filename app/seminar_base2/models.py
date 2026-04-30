@@ -2,13 +2,14 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 # from markdownx.models import MarkdownxField
+import os
 
 # Create your models here.
 
 # セミナーモデル
 class Seminar(models.Model):
     
-    uuid = models.UUIDField(default=uuid.uuid4,unique=True, editable=False, verbose_name="UUID")
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name="UUID")
     
     title = models.CharField(max_length=200,verbose_name="セミナー名")
     description = models.TextField(verbose_name="詳細")
@@ -46,7 +47,7 @@ class Seminar(models.Model):
 # 参加者モデル
 class Members(models.Model):
     
-    uuid = models.UUIDField(default=uuid.uuid4,unique=True, editable=False, verbose_name="UUID")
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name="UUID")
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="ユーザー")
     
@@ -74,3 +75,34 @@ class Members(models.Model):
         
     def __str__(self):
         return self.user.username
+    
+def get_seminar_file_path(instance, filename):
+    """
+    セミナーファイルの保存パスを生成する関数
+    Args:
+        instance (_type_): _description_
+        filename (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    ext = os.path.splitext(filename)[1]
+    return f'seminar_base2/files/{instance.uuid}{ext}'
+
+# ファイルモデル
+class File(models.Model):
+    
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name="UUID")
+    
+    name = models.CharField(max_length=255, verbose_name="ファイル名")
+    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
+    file = models.FileField(upload_to=get_seminar_file_path, verbose_name="ファイル")
+
+    class Meta:
+        verbose_name = "ファイル"
+        verbose_name_plural = "「ファイル」 一覧"
+        
+        ordering = ['id']
+        
+    def __str__(self):
+        return self.name

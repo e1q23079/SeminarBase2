@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Seminar, Members, User
+from .models import Seminar, Members, User, File
+from django.utils.safestring import mark_safe
 
 # Register your models here.
 
@@ -28,6 +29,19 @@ class MembersAdmin(admin.ModelAdmin):
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
 admin.site.register(Members, MembersAdmin)
+
+# ファイルモデルの管理画面設定
+class FileAdmin(admin.ModelAdmin):
+    list_display = ('name', 'seminar', 'file', 'file_url')
+    # セミナーでフィルタリングできるように設定
+    list_filter = ('seminar',)
+    # ファイルのURLを表示するためのメソッド
+    def file_url(self, obj):
+        if obj.file:
+            return obj.file.url
+        return "No File"
+    file_url.short_description = "ファイルURL"
+admin.site.register(File, FileAdmin)
 
 # 管理サイトのタイトルを変更
 admin.site.site_header = "SeminarBase2 管理者サイト"

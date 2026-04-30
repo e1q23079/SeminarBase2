@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'seminar_base2.apps.SeminarBase2Config',
     # 'markdownx',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
@@ -139,3 +140,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #     'markdown.extensions.nl2br',
 #     'markdown.extensions.attr_list',
 # ]
+
+# メディアファイルの設定
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
