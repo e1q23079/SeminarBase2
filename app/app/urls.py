@@ -32,6 +32,7 @@ urlpatterns = [
     # path('print/<uuid:seminar_id>/<int:lecture_id>/', views.PrintView.as_view(), name='print_print'),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
+    path('file/<uuid:uuid>', views.ProtectFileView.as_view(), name='file_view'),
 ]
 
 if settings.DEBUG:

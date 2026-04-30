@@ -32,13 +32,19 @@ admin.site.register(Members, MembersAdmin)
 
 # ファイルモデルの管理画面設定
 class FileAdmin(admin.ModelAdmin):
-    list_display = ('name', 'seminar', 'file', 'file_url')
+    list_display = ('name', 'file_link', 'seminar', 'file_url')
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
+    # ファイルを直接表示するためのメソッド
+    def file_link(self, obj):
+        if obj.file:
+            return mark_safe(f'<a href="/file/{obj.uuid}" target="_blank">ファイルを表示</a>')
+        return "No File"
+    file_link.short_description = "ファイルリンク"
     # ファイルのURLを表示するためのメソッド
     def file_url(self, obj):
         if obj.file:
-            return obj.file.url
+            return f"/file/{obj.uuid}"
         return "No File"
     file_url.short_description = "ファイルURL"
 admin.site.register(File, FileAdmin)
