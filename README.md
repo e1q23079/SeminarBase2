@@ -26,6 +26,7 @@ docker compose down
 - `SECRET_KEY`：シークレットキー
 - `DEBUG`：デバッグモード
 - `ALLOWED_HOSTS`：許可するホスト
+- `EDITION`：バージョン
 
 ### 開発環境
 - `.env`：`./app/.env`

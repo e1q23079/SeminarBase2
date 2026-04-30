@@ -9,13 +9,17 @@ from django.http import Http404, HttpResponse, FileResponse
 from .lib.doc import Doc
 from django.conf import settings
 import mimetypes
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Create your views here.
 
 # ホームページのビュー
 class IndexView(View):
     def get(self, request):
-        return render(request, 'index.html')
+        return render(request, 'index.html', {'edition': os.getenv('EDITION', None)})
     
 # セミナーリストページのビュー
 class SeminarListView(LoginRequiredMixin, View):
