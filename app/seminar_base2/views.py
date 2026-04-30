@@ -142,9 +142,12 @@ class PrintView(MemberAuthorizationMixin, View):
             return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
 
 # ファイル保護ビュー
-class ProtectFileView(MemberAuthorizationMixin, View):
+class ProtectFileView(LoginRequiredMixin, View):
     def get(self, request, uuid):
         file = get_object_or_404(File, uuid=uuid)
+        
+        if not file.seminar.members_set.filter(user=request.user).exists() and not request.user.is_superuser:
+            raise PermissionDenied
         
         if settings.DEBUG:
             return FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
