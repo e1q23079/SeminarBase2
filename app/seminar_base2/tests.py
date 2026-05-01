@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Seminar, Members, File
+from .models import Seminar, Members, File, Manager
 
 # Create your tests here.
 
@@ -39,6 +39,19 @@ class SeminarListViewTests(TestCase):
         response = self.client.get('/seminar')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'seminar_list.html')
+        
+    def test_seminar_list_view_login_manager(self):
+        '''
+        セミナーリストのビューのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        seminar = Seminar.objects.create(title='Test Seminar2', description='Test Description2',  content='# Test Content2\nTest Content2')
+        Manager.objects.create(user=user, seminar=seminar)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get('/seminar')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'seminar_list.html')
 
 # レクチャーリストのビューテスト
 class LectureListViewTests(TestCase):
@@ -46,26 +59,28 @@ class LectureListViewTests(TestCase):
         '''
         テスト用のセミナーとレクチャーを作成する
         '''
-        self.seminar = Seminar.objects.create(title='Test Seminar', description='Test Description', content='# Test Content\nTest Content')
+        self.seminar1 = Seminar.objects.create(title='Test Seminar1', description='Test Description', content='# Test Content\nTest Content')
+        self.seminar2 = Seminar.objects.create(title='Test Seminar2', description='Test Description', content='# Test Content\nTest Content')
         # Lecture.objects.create(seminar=self.seminar, title='Test Lecture', content='Test Content')
     
     def test_lecture_list_view_not_login(self):
         '''
         レクチャーリストのビューのテスト（ログインしていない場合）
         '''
-        response = self.client.get(f'/lecture/{self.seminar.uuid}')
+        response = self.client.get(f'/lecture/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f'/accounts/login/?next=/lecture/{self.seminar.uuid}')
+        self.assertRedirects(response, f'/accounts/login/?next=/lecture/{self.seminar1.uuid}')
         
     def test_lecture_list_view_login_not_member(self):
         '''
         レクチャーリストのビューのテスト（ログインしている場合，受講者ではないユーザー）
         '''
 
-        User.objects.create_user(username='testuser', password='testpassword')
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Members.objects.create(user=user, seminar=self.seminar2)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/lecture/{self.seminar.uuid}')
+        response = self.client.get(f'/lecture/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 403)
         
     def test_lecture_list_view_login_member(self):
@@ -73,10 +88,10 @@ class LectureListViewTests(TestCase):
         レクチャーリストのビューのテスト（ログインしている場合，受講者であるユーザー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/lecture/{self.seminar.uuid}')
+        response = self.client.get(f'/lecture/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'lecture_list.html')
         
@@ -85,12 +100,35 @@ class LectureListViewTests(TestCase):
         レクチャーリストのビューのテスト（ログインしている場合，受講者であるユーザー，存在しないセミナー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
         response = self.client.get(f'/lecture/abcdefg')
         self.assertEqual(response.status_code, 404)
         self.assertTemplateUsed(response, '404.html')
+        
+    def test_lecture_list_view_login_manager(self):
+        ''' 
+        レクチャーリストのビューのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/lecture/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lecture_list.html')
+        
+    def test_lecture_list_view_login_no_manager(self):
+        ''' 
+        レクチャーリストのビューのテスト（ログインしている場合，マネージャーでないユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar2)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/lecture/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 403)
         
 # ドキュメントのビューテスト
 class DocumentViewTests(TestCase):
@@ -98,26 +136,28 @@ class DocumentViewTests(TestCase):
         '''
         テスト用のセミナーとレクチャーを作成する
         '''
-        self.seminar = Seminar.objects.create(title='Test Seminar', description='Test Description',  content='# Test Content\nTest Content')
+        self.seminar1 = Seminar.objects.create(title='Test Seminar1', description='Test Description',  content='# Test Content\nTest Content')
+        self.seminar2 = Seminar.objects.create(title='Test Seminar2', description='Test Description',  content='# Test Content\nTest Content')
         # self.lecture = Lecture.objects.create(seminar=self.seminar, title='Test Lecture', content='Test Content')
     
     def test_document_view_not_login(self):
         '''
         ドキュメントのビューのテスト（ログインしていない場合）
         '''
-        response = self.client.get(f'/doc/{self.seminar.uuid}?lec=1')
+        response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=1')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f'/accounts/login/?next=/doc/{self.seminar.uuid}?lec=1')
+        self.assertRedirects(response, f'/accounts/login/?next=/doc/{self.seminar1.uuid}?lec=1')
         
     def test_doc_view_login_not_member(self):
         '''
         ドキュメントのビューのテスト（ログインしている場合，受講者ではないユーザー）
         '''
 
-        User.objects.create_user(username='testuser', password='testpassword')
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Members.objects.create(user=user, seminar=self.seminar2)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/doc/{self.seminar.uuid}?lec=1')
+        response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=1')
         self.assertEqual(response.status_code, 403)
         
     def test_doc_view_login_member(self):
@@ -125,10 +165,10 @@ class DocumentViewTests(TestCase):
         ドキュメントのビューのテスト（ログインしている場合，受講者であるユーザー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/doc/{self.seminar.uuid}?lec=1')
+        response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=1')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'document.html')
         
@@ -137,7 +177,7 @@ class DocumentViewTests(TestCase):
         ドキュメントのビューのテスト（ログインしている場合，受講者であるユーザー, 存在しないセミナー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
         response = self.client.get(f'/doc/abcdefg?lec=0')
@@ -149,13 +189,72 @@ class DocumentViewTests(TestCase):
         ドキュメントのビューのテスト（ログインしている場合，受講者であるユーザー, 存在しないレクチャー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/doc/{self.seminar.uuid}?lec=0')
+        response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=0')
         self.assertEqual(response.status_code, 404)
         self.assertTemplateUsed(response, '404.html')
         
+    def test_doc_view_login_manager(self):
+        ''' 
+        ドキュメントのビューのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'document.html')
+        
+    def test_doc_view_login_no_manager(self):
+        ''' 
+        ドキュメントのビューのテスト（ログインしている場合，マネージャーでないユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar2)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=1')
+        self.assertEqual(response.status_code, 403)
+        
+    def test_doc_view_progress_manage_off(self):
+        ''' 
+        ドキュメントのビューのテスト（進捗の更新，管理機能オフ）
+        '''
+        seminar1 = Seminar.objects.create(title='Test Seminar1', description='Test Description1',  content='# Test Content1\nTest Content1', manage=False)
+        
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        member = Members.objects.create(user=user, seminar=seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/doc/{seminar1.uuid}?lec=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'document.html')
+        
+        member.refresh_from_db()
+        self.assertEqual(member.progress, 0)
+        self.assertIsNone(member.last_access)
+        
+    def test_doc_view_progress_manage_on(self):
+        ''' 
+        ドキュメントのビューのテスト（進捗の更新，管理機能オン）
+        '''
+        seminar2 = Seminar.objects.create(title='Test Seminar2', description='Test Description2',  content='# Test Content2\nTest Content2', manage=True)
+        
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        member = Members.objects.create(user=user, seminar=seminar2)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/doc/{seminar2.uuid}?lec=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'document.html')
+        
+        member.refresh_from_db()
+        self.assertEqual(member.progress, 1)
+        self.assertIsNotNone(member.last_access)
+
 # 印刷セミナーリストのビューテスト
 class PrintListViewTests(TestCase):
     def setUp(self):
@@ -182,6 +281,7 @@ class PrintListViewTests(TestCase):
         response = self.client.get('/print-list')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'print_list.html')
+
         
 # 印刷のビューテスト
 class PrintViewTests(TestCase):
@@ -189,33 +289,35 @@ class PrintViewTests(TestCase):
         '''
         テスト用のセミナーとレクチャーを作成する
         '''
-        self.seminar = Seminar.objects.create(title='Test Seminar', description='Test Description',  content='# Test Content\nTest Content')
+        self.seminar1 = Seminar.objects.create(title='Test Seminar1', description='Test Description1',  content='# Test Content1\nTest Content1')
+        self.seminar2 = Seminar.objects.create(title='Test Seminar2', description='Test Description2',  content='# Test Content2\nTest Content2')
         # self.lecture = Lecture.objects.create(seminar=self.seminar, title='Test Lecture', content='Test Content')
     
     def test_print_view_not_login(self):
         '''
         印刷のビューのテスト（ログインしていない場合）
         '''
-        response = self.client.get(f'/print/{self.seminar.uuid}')
+        response = self.client.get(f'/print/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f'/accounts/login/?next=/print/{self.seminar.uuid}')
+        self.assertRedirects(response, f'/accounts/login/?next=/print/{self.seminar1.uuid}')
         
-        response = self.client.get(f'/print/{self.seminar.uuid}?lec=1')
+        response = self.client.get(f'/print/{self.seminar1.uuid}?lec=1')
         self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, f'/accounts/login/?next=/print/{self.seminar.uuid}?lec=1')
+        self.assertRedirects(response, f'/accounts/login/?next=/print/{self.seminar1.uuid}?lec=1')
         
     def test_print_view_login_not_member(self):
         '''
         印刷のビューのテスト（ログインしている場合，受講者ではないユーザー）
         '''
 
-        User.objects.create_user(username='testuser', password='testpassword')
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Members.objects.create(user=user, seminar=self.seminar2)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/print/{self.seminar.uuid}')
+        response = self.client.get(f'/print/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 403)
         
-        response = self.client.get(f'/print/{self.seminar.uuid}?lec=1')
+        response = self.client.get(f'/print/{self.seminar1.uuid}?lec=1')
         self.assertEqual(response.status_code, 403)
         
     def test_print_view_login_member(self):
@@ -223,14 +325,14 @@ class PrintViewTests(TestCase):
         印刷のビューのテスト（ログインしている場合，受講者であるユーザー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/print/{self.seminar.uuid}')
+        response = self.client.get(f'/print/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'print.html')
         
-        response = self.client.get(f'/print/{self.seminar.uuid}?lec=1')
+        response = self.client.get(f'/print/{self.seminar1.uuid}?lec=1')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'print.html')
         
@@ -239,7 +341,7 @@ class PrintViewTests(TestCase):
         印刷のビューのテスト（ログインしている場合，受講者であるユーザー, 存在しないセミナー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
         response = self.client.get(f'/print/abcdefg')
@@ -251,12 +353,42 @@ class PrintViewTests(TestCase):
         印刷のビューのテスト（ログインしている場合，受講者であるユーザー, 存在しないレクチャー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         
-        response = self.client.get(f'/print/{self.seminar.uuid}?lec=0')
+        response = self.client.get(f'/print/{self.seminar1.uuid}?lec=0')
         self.assertEqual(response.status_code, 404)
         self.assertTemplateUsed(response, '404.html')
+        
+    def test_print_view_login_manager(self):
+        ''' 
+        印刷のビューのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/print/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'print.html')
+        
+        response = self.client.get(f'/print/{self.seminar1.uuid}?lec=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'print.html')
+        
+    def test_print_view_login_not_manager(self):
+        ''' 
+        印刷のビューのテスト（ログインしている場合，マネージャーでないユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar2)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/print/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 403)
+        
+        response = self.client.get(f'/print/{self.seminar1.uuid}?lec=1')
+        self.assertEqual(response.status_code, 403)
 
 # Docのテスト
 from .lib.doc import Doc
@@ -319,16 +451,23 @@ class DocTests(TestCase):
             "next": 3
         })
         self.assertEqual(self.doc.get_lecture(4), None)
+        
+    def test_get_lecture_count(self):
+        '''
+        ドキュメントからレクチャーの数を取得するテスト
+        '''
+        self.assertEqual(self.doc.get_lecture_count(), 3)
 
 
 # ファイルプロテクトのテスト
-class PrtectFileTests(TestCase):
+class ProtectFileTests(TestCase):
     def setUp(self):
         '''
         テスト用のセミナーを作成する
         '''
-        self.seminar = Seminar.objects.create(title='Test Seminar', description='Test Description',  content='# Test Content\nTest Content')
-        self.file = File.objects.create(seminar=self.seminar, name='Test File', file='test.txt')
+        self.seminar1 = Seminar.objects.create(title='Test Seminar1', description='Test Description',  content='# Test Content\nTest Content')
+        self.seminar2 = Seminar.objects.create(title='Test Seminar2', description='Test Description',  content='# Test Content\nTest Content')
+        self.file = File.objects.create(seminar=self.seminar1, name='Test File', file='test.txt')
         
     def test_protect_file_not_login(self):
         '''
@@ -342,7 +481,8 @@ class PrtectFileTests(TestCase):
         '''
         ファイルが保護されているかのテスト（ログインしている場合，受講者ではないユーザー）
         '''
-        User.objects.create_user(username='testuser', password='testpassword')
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Members.objects.create(user=user, seminar=self.seminar2)
         self.client.login(username='testuser', password='testpassword')
         
         response = self.client.get(f'/file/{self.file.uuid}')
@@ -353,7 +493,7 @@ class PrtectFileTests(TestCase):
         ファイルが保護されているかのテスト（ログインしている場合，受講者であるユーザー）
         '''
         user = User.objects.create_user(username='testuser', password='testpassword')
-        Members.objects.create(user=user, seminar=self.seminar)
+        Members.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         response = self.client.get(f'/file/{self.file.uuid}')
         self.assertEqual(response.status_code, 200)
@@ -364,3 +504,83 @@ class PrtectFileTests(TestCase):
         '''
         response = self.client.get(f'/media/seminar_base2/files/{self.file.name}')
         self.assertEqual(response.status_code, 404)
+        
+    def test_protect_file_login_manager(self):
+        '''
+        ファイルが保護されているかのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(f'/file/{self.file.uuid}')
+        self.assertEqual(response.status_code, 200)
+        
+    def test_protect_file_login_not_manager(self):
+        '''
+        ファイルが保護されているかのテスト（ログインしている場合，マネージャーでないユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar2)
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(f'/file/{self.file.uuid}')
+        self.assertEqual(response.status_code, 403)
+
+# マネージャーページのビューテスト
+class ManagerViewTests(TestCase):
+    def setUp(self):
+        '''
+        テスト用のセミナーを作成する
+        '''
+        self.seminar1 = Seminar.objects.create(title='Test Seminar 1', description='Test Description 1',  content='# Test Content 1\nTest Content 1', manage=True)
+        self.seminar2 = Seminar.objects.create(title='Test Seminar 2', description='Test Description 2',  content='# Test Content 2\nTest Content 2', manage=True)
+        
+    def test_manager_list_view_not_login(self):
+        '''
+        マネージリストページのビューのテスト（ログインしていない場合）
+        '''
+        response = self.client.get('/manager')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, '/accounts/login/?next=/manager')
+        
+    def test_manager_list_view_login(self):
+        '''
+        マネージリストページのビューのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get('/manager')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'manage_list.html')
+    
+    def test_manager_view_not_login(self):
+        '''
+        マネージャーページのビューのテスト（ログインしていない場合）
+        '''
+        response = self.client.get(f'/manager/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, f'/accounts/login/?next=/manager/{self.seminar1.uuid}')
+        
+    def test_manager_view_login_not_manager(self):
+        '''
+        マネージャーページのビューのテスト（ログインしている場合，マネージャーでないユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar2)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/manager/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 403)
+        
+    def test_manager_view_login_manager(self):
+        ''' 
+        マネージャーページのビューのテスト（ログインしている場合，マネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        
+        response = self.client.get(f'/manager/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'manager.html')

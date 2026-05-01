@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}講座一覧 - マネージャーページ{% endblock %}
+
+{% block css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>講座一覧 - マネージャーページ</h1>
+<p>表示する講座を選択してください。</p>
+<p class="back-link"><a href="/">戻る</a></p>
+{% for seminar in seminars %}
+    {% if seminar.is_manager %}
+        {% comment %} <p><a href="/print/{{ seminar.uuid }}" class="title" target="_blank">{{ seminar.title }}</a></p> {% endcomment %}
+        <p><a href="/manager/{{ seminar.uuid }}" class="title">{{ seminar.title }}</a></p>
+        <p class="description">{{ seminar.description }}</p>
+    {% endif %}
+{% endfor %}
+
+{% endblock %}

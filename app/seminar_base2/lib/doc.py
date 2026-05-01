@@ -61,3 +61,9 @@ class Doc:
             if lecture['chapter'] == page:
                 return lecture
         return None
+    
+    def get_lecture_count(self):
+        '''
+        ドキュメントからレクチャーの数を取得する
+        '''
+        return len(self.lectures)

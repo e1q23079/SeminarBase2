@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 # from markdownx.models import MarkdownxField
 import os
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -17,11 +18,13 @@ class Seminar(models.Model):
     # content = MarkdownxField(verbose_name="コンテンツ", blank=True)
     content = models.TextField(verbose_name="コンテンツ", blank=True)
     
+    manage = models.BooleanField(default=False, verbose_name="管理モード")
+    
     class Meta:
         verbose_name = "セミナー"
         verbose_name_plural = "「セミナー」 一覧"
         
-        ordering = ['id']
+        ordering = ['-id']
 
     def __str__(self):
         return self.title
@@ -53,6 +56,10 @@ class Members(models.Model):
     
     seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
     
+    progress = models.IntegerField(default=0, verbose_name="進捗")
+    
+    last_access = models.DateTimeField(default=None, null=True, blank=True, verbose_name="最終アクセス日時")
+    
     def full_name(self):
         return f"{self.user.last_name} {self.user.first_name}"
     full_name.short_description = "名前"
@@ -71,6 +78,43 @@ class Members(models.Model):
     def save(self, *args, **kwargs):
         if self.user.is_staff or self.user.is_superuser:
             raise ValueError("Staff users and superusers cannot be added as seminar members.")
+        super().save(*args, **kwargs)
+        
+    def __str__(self):
+        return self.user.username
+    
+# マネージャーモデル
+class Manager(models.Model):
+    
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name="UUID")
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="ユーザー")
+    
+    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
+
+    def full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+    full_name.short_description = "名前"
+
+    class Meta:
+        verbose_name = "マネージャー"
+        verbose_name_plural = "「マネージャー」 一覧"
+        
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'seminar'], name='unique_manager_per_seminar')
+        ]
+        
+        ordering = ['user__username']
+    
+    # セミナーが管理モードでない場合は保存できないようにする
+    def clean(self):
+        if self.seminar.manage == False:
+            raise ValidationError("このセミナーは管理モードではありません。")
+        
+    # 保存時にスタッフユーザーやスーパーユーザーを除外
+    def save(self, *args, **kwargs):
+        if self.user.is_staff or self.user.is_superuser:
+            raise ValueError("Staff users and superusers cannot be added as seminar staff.")
         super().save(*args, **kwargs)
         
     def __str__(self):

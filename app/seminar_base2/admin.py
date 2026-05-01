@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Seminar, Members, User, File
+from .models import Seminar, Members, User, File, Manager
 from django.utils.safestring import mark_safe
 
 # Register your models here.
@@ -26,6 +26,7 @@ admin.site.register(Seminar, SeminarAdmin)
 # 参加者モデルの管理画面設定
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
+    fields = ('user', 'seminar')
     
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -36,6 +37,20 @@ class MembersAdmin(admin.ModelAdmin):
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
 admin.site.register(Members, MembersAdmin)
+
+# マネージャーモデルの管理画面設定
+class ManagerAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'seminar')
+    
+    # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            kwargs["queryset"] = User.objects.filter(is_staff=False, is_superuser=False)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    # セミナーでフィルタリングできるように設定
+    list_filter = ('seminar',)
+admin.site.register(Manager, ManagerAdmin)    
 
 # ファイルモデルの管理画面設定
 class FileAdmin(admin.ModelAdmin):
