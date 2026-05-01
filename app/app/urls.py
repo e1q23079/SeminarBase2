@@ -33,6 +33,8 @@ urlpatterns = [
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
     path('file/<uuid:uuid>', views.ProtectFileView.as_view(), name='file_view'),
+    path('manager', views.ManagerListView.as_view(), name='manager_list'),
+    path('manager/<uuid:seminar_id>', views.ManagerView.as_view(), name='manager_view'),
 ]
 
 if settings.DEBUG:
