@@ -12,6 +12,7 @@ import mimetypes
 from dotenv import load_dotenv
 import os
 from django.utils import timezone
+import urllib.parse
 
 load_dotenv()
 
@@ -183,13 +184,17 @@ class ProtectFileView(LoginRequiredMixin, View):
             raise PermissionDenied
         
         if settings.DEBUG:
-            return FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
+            response = FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
+        else:
+            
+            mime_type, _ = mimetypes.guess_type(file.file.name)
         
-        mime_type, _ = mimetypes.guess_type(file.file.name)
-        
-        response = HttpResponse()
-        response['Content-Type'] = mime_type or 'application/octet-stream'
-        response['X-Accel-Redirect'] = f'/protect/{file.file.name}'
+            response = HttpResponse()
+            response['Content-Type'] = mime_type or 'application/octet-stream'
+            response['X-Accel-Redirect'] = f'/protect/{file.file.name}'
+        file_name = f'{file.name}{os.path.splitext(file.file.name)[1]}'
+        encode_file_name = urllib.parse.quote(file_name)
+        response['Content-Disposition'] = f'inline; filename*=UTF-8\'\'{encode_file_name}'
         return response
 
 # マネージリストページのビュー
