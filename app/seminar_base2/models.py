@@ -146,7 +146,7 @@ class File(models.Model):
         verbose_name = "ファイル"
         verbose_name_plural = "「ファイル」 一覧"
         
-        ordering = ['id']
+        ordering = ['name']
         
     def __str__(self):
         return self.name
