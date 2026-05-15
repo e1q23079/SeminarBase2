@@ -155,7 +155,7 @@ class LectureListViewTests(TestCase):
         
     def test_lecture_list_view_superuser(self):
         ''' 
-        レクチャーリストのビューのテスト（ログインしている場合，スーパーユーザー）
+        レクチャーリストのビューのテスト（ログインしている場合，スーパーユーザー，非公開セミナー）
         '''
         User.objects.create_superuser(username='admin', password='adminpassword')
         self.client.login(username='admin', password='adminpassword')
@@ -314,7 +314,7 @@ class DocumentViewTests(TestCase):
         
     def test_doc_view_superuser(self):
         ''' 
-        ドキュメントのビューのテスト（ログインしている場合，スーパーユーザー）
+        ドキュメントのビューのテスト（ログインしている場合，スーパーユーザー，非公開セミナー）
         '''
         User.objects.create_superuser(username='admin', password='adminpassword')
         self.client.login(username='admin', password='adminpassword')
@@ -489,7 +489,7 @@ class PrintViewTests(TestCase):
         
     def test_print_view_superuser(self):
         ''' 
-        印刷のビューのテスト（ログインしている場合，スーパーユーザー）
+        印刷のビューのテスト（ログインしている場合，スーパーユーザー，非公開セミナー）
         '''
         User.objects.create_superuser(username='admin', password='adminpassword')
         self.client.login(username='admin', password='adminpassword')
@@ -660,7 +660,7 @@ class ProtectFileTests(TestCase):
         
     def test_protect_file_superuser(self):
         '''
-        ファイルが保護されているかのテスト（ログインしている場合，スーパーユーザー）
+        ファイルが保護されているかのテスト（ログインしている場合，スーパーユーザー，非公開セミナー）
         '''
         User.objects.create_superuser(username='admin', password='adminpassword')
         self.client.login(username='admin', password='adminpassword')
@@ -752,7 +752,7 @@ class ManagerViewTests(TestCase):
         
     def test_manager_view_superuser(self):
         '''
-        マネージャーページのビューのテスト（ログインしている場合，スーパーユーザー）
+        マネージャーページのビューのテスト（ログインしている場合，スーパーユーザー，非公開セミナー）
         '''
         User.objects.create_superuser(username='admin', password='adminpassword')
         self.client.login(username='admin', password='adminpassword')

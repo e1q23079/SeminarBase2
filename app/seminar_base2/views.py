@@ -186,9 +186,12 @@ class ProtectFileView(MemberAuthorizationMixin, View):
     def get(self, request, uuid):
         file = get_object_or_404(File, uuid=uuid)
         
-        if not file.seminar.public or not file.seminar.members_set.filter(user=request.user).exists() and not request.user.is_superuser and not file.seminar.manager_set.filter(user=request.user).exists():
-            raise PermissionDenied
-        
+        if not request.user.is_superuser:
+            if not file.seminar.public:
+                raise PermissionDenied
+            if not file.seminar.members_set.filter(user=request.user).exists() and not file.seminar.manager_set.filter(user=request.user).exists():
+                    raise PermissionDenied
+
         if settings.DEBUG:
             response = FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
         else:
