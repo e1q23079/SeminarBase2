@@ -21,6 +21,17 @@ sh cloudflare_logs.sh
 docker compose -f docker-compose.product.yml up -d --build
 ```
 
+## スクリプトで起動する
+### Cloudflare版
+```bash
+sh start.sh
+```
+### Nginx版
+```bash
+sh start_product.sh 
+```
+
+
 #### SSL
 - `infra/ssl/nginx.crt`
 - `infra/ssl/nginx.key`
