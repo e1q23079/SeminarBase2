@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 import re
 from django.http import Http404, HttpResponse, FileResponse
 from .lib.doc import Doc
+from .lib.seminar import is_member, is_manager
 from django.conf import settings
 import mimetypes
 from dotenv import load_dotenv
@@ -29,7 +30,7 @@ class SeminarListView(LoginRequiredMixin, View):
         seminars = Seminar.objects.all().order_by('-id')
         
         for seminar in seminars:
-            seminar.is_member = (seminar.public and seminar.members_set.filter(user=request.user).exists()) or request.user.is_superuser or (seminar.public and seminar.manager_set.filter(user=request.user).exists())
+            is_member(seminar, request.user)
 
         return render(request, 'seminar_list.html', {'seminars': seminars})
  
@@ -139,7 +140,7 @@ class PrintListView(LoginRequiredMixin, View):
         seminars = Seminar.objects.all().order_by('-id')
         
         for seminar in seminars:
-            seminar.is_member = (seminar.public and seminar.members_set.filter(user=request.user).exists()) or request.user.is_superuser or (seminar.public and seminar.manager_set.filter(user=request.user).exists())
+            seminar = is_member(seminar, request.user)
 
         return render(request, 'print_list.html', {'seminars': seminars})
 
@@ -208,7 +209,7 @@ class ManagerListView(ManagerAuthorizationMixin, View):
         seminars = Seminar.objects.filter(manage=True).order_by('-id')
         
         for seminar in seminars:
-            seminar.is_manager = (seminar.public and seminar.manager_set.filter(user=request.user).exists()) or request.user.is_superuser
+            seminar = is_manager(seminar, request.user)
             
         return render(request, 'manage_list.html', {'seminars': seminars})
     
