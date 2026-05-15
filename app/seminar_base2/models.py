@@ -56,7 +56,7 @@ class Members(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="ユーザー")
     
-    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
+    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー", related_name="members")
     
     progress = models.IntegerField(default=0, verbose_name="進捗")
     
@@ -92,7 +92,7 @@ class Manager(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="ユーザー")
     
-    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー")
+    seminar = models.ForeignKey(Seminar, on_delete=models.CASCADE, verbose_name="セミナー", related_name="managers")
 
     def full_name(self):
         return f"{self.user.last_name} {self.user.first_name}"
