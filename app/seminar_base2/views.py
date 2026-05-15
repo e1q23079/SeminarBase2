@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 import re
 from django.http import Http404, HttpResponse, FileResponse
 from .lib.doc import Doc
+from .lib.seminar import is_member, is_manager
 from django.conf import settings
 import mimetypes
 from dotenv import load_dotenv
@@ -29,8 +30,8 @@ class SeminarListView(LoginRequiredMixin, View):
         seminars = Seminar.objects.all().order_by('-id')
         
         for seminar in seminars:
-            seminar.is_member = seminar.members_set.filter(user=request.user).exists() or request.user.is_superuser or seminar.manager_set.filter(user=request.user).exists()
-        
+            is_member(seminar, request.user)
+
         return render(request, 'seminar_list.html', {'seminars': seminars})
  
 # 参加者認証ミックスイン
@@ -51,6 +52,8 @@ class MemberAuthorizationMixin(LoginRequiredMixin):
         if seminar_id:
             seminar = get_object_or_404(Seminar, uuid=seminar_id)
             if not seminar.members_set.filter(user=request.user).exists() and not seminar.manager_set.filter(user=request.user).exists():
+                raise PermissionDenied
+            if not seminar.public:
                 raise PermissionDenied
         
         return super().dispatch(request, *args, **kwargs) 
@@ -73,6 +76,9 @@ class ManagerAuthorizationMixin(LoginRequiredMixin):
         if 'seminar_id' in kwargs:
             seminar_id = kwargs['seminar_id']
             if not Manager.objects.filter(user=request.user, seminar__uuid=seminar_id).exists():
+                raise PermissionDenied
+            
+            if not Seminar.objects.filter(uuid=seminar_id, public=True).exists():
                 raise PermissionDenied
 
         return super().dispatch(request, *args, **kwargs)
@@ -134,8 +140,8 @@ class PrintListView(LoginRequiredMixin, View):
         seminars = Seminar.objects.all().order_by('-id')
         
         for seminar in seminars:
-            seminar.is_member = seminar.members_set.filter(user=request.user).exists() or request.user.is_superuser or seminar.manager_set.filter(user=request.user).exists()
-            
+            seminar = is_member(seminar, request.user)
+
         return render(request, 'print_list.html', {'seminars': seminars})
 
 # 印刷ページのビュー
@@ -176,13 +182,16 @@ class PrintView(MemberAuthorizationMixin, View):
             return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
 
 # ファイル保護ビュー
-class ProtectFileView(LoginRequiredMixin, View):
+class ProtectFileView(MemberAuthorizationMixin, View):
     def get(self, request, uuid):
         file = get_object_or_404(File, uuid=uuid)
         
-        if not file.seminar.members_set.filter(user=request.user).exists() and not request.user.is_superuser and not file.seminar.manager_set.filter(user=request.user).exists():
-            raise PermissionDenied
-        
+        if not request.user.is_superuser:
+            if not file.seminar.public:
+                raise PermissionDenied
+            if not file.seminar.members_set.filter(user=request.user).exists() and not file.seminar.manager_set.filter(user=request.user).exists():
+                    raise PermissionDenied
+
         if settings.DEBUG:
             response = FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
         else:
@@ -203,7 +212,7 @@ class ManagerListView(ManagerAuthorizationMixin, View):
         seminars = Seminar.objects.filter(manage=True).order_by('-id')
         
         for seminar in seminars:
-            seminar.is_manager = seminar.manager_set.filter(user=request.user).exists() or request.user.is_superuser
+            seminar = is_manager(seminar, request.user)
             
         return render(request, 'manage_list.html', {'seminars': seminars})
     

@@ -1,0 +1,1 @@
+docker compose -f docker-compose.product.yml up -d --build

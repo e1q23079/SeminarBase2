@@ -18,6 +18,8 @@ class Seminar(models.Model):
     # content = MarkdownxField(verbose_name="コンテンツ", blank=True)
     content = models.TextField(verbose_name="コンテンツ", blank=True)
     
+    public = models.BooleanField(default=False, verbose_name="公開")
+    
     manage = models.BooleanField(default=False, verbose_name="管理モード")
     
     class Meta:

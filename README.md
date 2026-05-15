@@ -3,6 +3,7 @@
 このアプリケーションは，資料の共有を行うウェブアプリケーションです。
 
 ## ウェブアプリケーションの起動
+### Cloudflare版
 ```bash
 # コンテナビルド
 docker compose build
@@ -10,10 +11,19 @@ docker compose build
 docker compose up -d
 ```
 
-## ウェブアプリケーションのURLを確認する
+#### ウェブアプリケーションのURLを確認する
 ```bash
 sh cloudflare_logs.sh
 ```
+
+### Nginx版
+```bash
+docker compose -f docker-compose.product.yml up -d --build
+```
+
+#### SSL
+- `infra/ssl/nginx.crt`
+- `infra/ssl/nginx.key`
 
 ## ウェブアプリケーションの終了
 ```bash
@@ -26,6 +36,7 @@ docker compose down
 - `SECRET_KEY`：シークレットキー
 - `DEBUG`：デバッグモード
 - `ALLOWED_HOSTS`：許可するホスト
+- `CSRF_TRUSTED_ORIGINS`: CSRF保護で信頼するオリジン
 - `EDITION`：バージョン
 
 ### 開発環境
