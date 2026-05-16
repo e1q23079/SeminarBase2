@@ -1,6 +1,8 @@
 from ..models import Seminar
 from django.contrib.auth.models import User
 
+# TODO: アクセス（このファイルは使わない？）
+
 def is_member(seminar: Seminar, user: User) -> Seminar:
     """_summary_
 

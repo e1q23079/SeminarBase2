@@ -16,7 +16,7 @@
 <p>印刷する講座を選択してください。</p>
 <p class="back-link"><a href="/">戻る</a></p>
 {% for seminar in seminars %}
-    {% if seminar.is_member %}
+    {% if seminar.is_accessible %}
         {% comment %} <p><a href="/print/{{ seminar.uuid }}" class="title" target="_blank">{{ seminar.title }}</a></p> {% endcomment %}
         <p><a href="/print/{{ seminar.uuid }}" class="title" target="_blank">{{ seminar.title }}</a></p>
         <p class="description">{{ seminar.description }}</p>
