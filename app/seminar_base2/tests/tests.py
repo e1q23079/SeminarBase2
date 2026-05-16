@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from .models import Seminar, Members, File, Manager
+from ..models import Seminar, Members, File, Manager
 
 # Create your tests here.
 
@@ -503,7 +503,7 @@ class PrintViewTests(TestCase):
         self.assertTemplateUsed(response, 'print.html')
 
 # Docのテスト
-from .lib.doc import Doc
+from ..lib.doc import Doc
 
 class DocTests(TestCase):
     def setUp(self):
