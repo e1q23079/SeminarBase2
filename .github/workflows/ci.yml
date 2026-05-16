@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  ci:
     
     runs-on: ubuntu-latest
 
@@ -32,6 +32,10 @@ jobs:
       - name: Run check
         working-directory: app
         run: python3 manage.py check
+
+      - name: Run lint
+        working-directory: app
+        run: flake8 .
 
       - name: Run test
         working-directory: app

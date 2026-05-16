@@ -4,10 +4,14 @@ bleach==6.3.0
 Django==5.2.11
 django-cleanup==9.0.0
 django-markdownx==4.0.9
+flake8==7.3.0
 gunicorn==25.0.3
 Markdown==3.10.2
+mccabe==0.7.0
 packaging==26.0
 pillow==12.1.0
+pycodestyle==2.14.0
+pyflakes==3.4.0
 python-dotenv==1.2.1
 soupsieve==2.8.3
 sqlparse==0.5.5

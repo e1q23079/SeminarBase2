@@ -24,18 +24,41 @@ urlpatterns = [
     path('admin', admin.site.urls),
     path('', views.IndexView.as_view(), name='index'),
     path('seminar', views.SeminarListView.as_view(), name='seminar_list'),
-    path('lecture/<uuid:seminar_id>', views.LectureListView.as_view(), name='lecture_list'),
-    path('doc/<uuid:seminar_id>', views.DocumentView.as_view(), name='document'),
+    path(
+        'lecture/<uuid:seminar_id>',
+        views.LectureListView.as_view(),
+        name='lecture_list'
+    ),
+    path(
+        'doc/<uuid:seminar_id>',
+        views.DocumentView.as_view(),
+        name='document'
+    ),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('print-list', views.PrintListView.as_view(), name='print_seminar_list'),
-    path('print/<uuid:seminar_id>', views.PrintView.as_view(), name='print'),
-    # path('print/<uuid:seminar_id>/<int:lecture_id>/', views.PrintView.as_view(), name='print_print'),
+    path(
+        'print-list',
+        views.PrintListView.as_view(),
+        name='print_seminar_list'
+    ),
+    path(
+        'print/<uuid:seminar_id>',
+        views.PrintView.as_view(),
+        name='print'
+    ),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
-    path('file/<uuid:uuid>', views.ProtectFileView.as_view(), name='file_view'),
+    path(
+        'file/<uuid:uuid>',
+        views.ProtectFileView.as_view(),
+        name='file_view'
+    ),
     path('manager', views.ManagerListView.as_view(), name='manager_list'),
-    path('manager/<uuid:seminar_id>', views.ManagerView.as_view(), name='manager_view'),
+    path(
+        'manager/<uuid:seminar_id>',
+        views.ManagerView.as_view(),
+        name='manager_view'
+    )
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)    # noqa: E501

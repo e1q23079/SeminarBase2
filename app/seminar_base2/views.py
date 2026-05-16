@@ -1,13 +1,12 @@
 from django.shortcuts import render, get_object_or_404
 from django.views import View
-# from markdownx.utils import markdownify
-from .models import Seminar, File, Members, Manager
+from .models import Seminar, File, Members
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.exceptions import PermissionDenied
 import re
 from django.http import Http404, HttpResponse, FileResponse
 from .lib.doc import Doc
-from .lib.seminar import is_member, is_manager
+from .lib.authorization import MemberAuthorizationMixin
+from .lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
 from django.conf import settings
 import mimetypes
 from dotenv import load_dotenv
@@ -15,214 +14,215 @@ import os
 from django.utils import timezone
 import urllib.parse
 
+# 環境変数をロード
 load_dotenv()
 
-# Create your views here.
 
 # ホームページのビュー
 class IndexView(View):
     def get(self, request):
-        return render(request, 'index.html', {'edition': os.getenv('EDITION', None)})
-    
-# セミナーリストページのビュー
-class SeminarListView(LoginRequiredMixin, View):
+        # EDITION情報を取得
+        edition = os.getenv('EDITION', None)
+        # ホームページをレンダリング
+        return render(request, 'index.html', {'edition': edition})
+
+
+# セミナーリストページのビュー（ログインが必要）
+class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
     def get(self, request):
+        # セミナーを取得
         seminars = Seminar.objects.all().order_by('-id')
-        
+        # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            is_member(seminar, request.user)
-
+            seminar.is_accessible = self.is_member_access(
+                request.user,
+                seminar
+            )
+        # セミナーリストページをレンダリング
         return render(request, 'seminar_list.html', {'seminars': seminars})
- 
-# 参加者認証ミックスイン
-class MemberAuthorizationMixin(LoginRequiredMixin):
-    def dispatch(self, request, *args, **kwargs):
-        
-        # ログインしていない場合はログインページへリダイレクト
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
-        
-        # 管理者は全てのセミナーにアクセス可能
-        if request.user.is_superuser:
-            return super().dispatch(request, *args, **kwargs)
-        
-        # セミナーIDをURLから取得して、参加者かどうかを確認
-        seminar_id = kwargs.get('seminar_id')
-        
-        if seminar_id:
-            seminar = get_object_or_404(Seminar, uuid=seminar_id)
-            if not seminar.members_set.filter(user=request.user).exists() and not seminar.manager_set.filter(user=request.user).exists():
-                raise PermissionDenied
-            if not seminar.public:
-                raise PermissionDenied
-        
-        return super().dispatch(request, *args, **kwargs) 
 
-# マネージャー認証ミックスイン
-class ManagerAuthorizationMixin(LoginRequiredMixin):
-    def dispatch(self, request, *args, **kwargs):
-        
-        # ログインしていない場合はログインページへリダイレクト
-        if not request.user.is_authenticated:
-            return self.handle_no_permission()
-        
-        # 管理者は全てのセミナーにアクセス可能
-        if request.user.is_superuser:
-            return super().dispatch(request, *args, **kwargs)
 
-        if not Manager.objects.filter(user=request.user).exists() or request.user.is_staff or request.user.is_superuser:
-            raise PermissionDenied
-        
-        if 'seminar_id' in kwargs:
-            seminar_id = kwargs['seminar_id']
-            if not Manager.objects.filter(user=request.user, seminar__uuid=seminar_id).exists():
-                raise PermissionDenied
-            
-            if not Seminar.objects.filter(uuid=seminar_id, public=True).exists():
-                raise PermissionDenied
-
-        return super().dispatch(request, *args, **kwargs)
-    
-# レクチャーリストページのビュー
-class LectureListView(MemberAuthorizationMixin, View):
+# レクチャーリストページのビュー（メンバー権限のアカウントが必要）
+class LectureListView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, seminar_id):
-        # seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        # lectures = seminar.lecture_set.all().order_by('id')
-        # return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
+        # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # ドキュメントを解析してレクチャーリストを取得
         doc = Doc(seminar.content)
         lectures = doc.get_lecture_titles()
-        return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
-    
-# ドキュメントページのビュー
-class DocumentView(MemberAuthorizationMixin, View):
+        # レクチャーリストページをレンダリング
+        return render(
+            request,
+            'lecture_list.html',
+            {'seminar': seminar, 'lectures': lectures}
+        )
+
+
+# ドキュメントページのビュー（メンバー権限のアカウントが必要）
+class DocumentView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, seminar_id):
-        # seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        # lecture = get_object_or_404(Lecture, uuid=lecture_id)
-        # lecture.content = markdownify(lecture.content)
-        # lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
-        # contens = {
-        #     'lecture': lecture,
-        #     'seminar': seminar,
-        #     'nextId': seminar.lecture_set.filter(id__gt=lecture.id).order_by('id').first() if seminar.lecture_set.filter(id__gt=lecture.id).exists() else None,
-        #     'prevId': seminar.lecture_set.filter(id__lt=lecture.id).order_by('-id').first()
-        # }
-        # return render(request, 'document.html', contens)
+        # クエリパラメータからlecを取得
         try:
             lec_id = int(request.GET.get('lec', 0))
         except (ValueError, TypeError):
             raise Http404("Invalid lecture ID")
+        # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # ドキュメントを解析してレクチャーを取得
         doc = Doc(seminar.content)
         lecture = doc.get_lecture(lec_id)
+        #  レクチャーが見つからない場合は404エラー
         if not lecture:
             raise Http404("Lecture not found")
-        lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
+        # レクチャーの内容をHTMLに変換してリンクにtarget="_blank"を追加
+        lecture['content'] = re.sub(
+            r'<a', '<a target="_blank" ', lecture['content']
+        )
+        # 進捗を更新（管理対象のセミナーのみ）
+        if seminar.manage:
+            # メンバーのみ
+            member = Members.objects.filter(
+                user=request.user,
+                seminar=seminar
+            ).first()
+            if member:
+                member.progress = lec_id
+                member.last_access = timezone.now()
+                member.save()
+        # ドキュメントページをレンダリング
         contents = {
             'lecture': lecture,
             'seminar': seminar,
             'nextId': lecture['next'],
             'prevId': lecture['prev']
         }
-        if seminar.manage:
-            member = Members.objects.filter(user=request.user, seminar=seminar).first()
-            if member:
-                member.progress = lec_id
-                member.last_access = timezone.now()
-                member.save()
         return render(request, 'document.html', contents)
-        
-        
-    
-# 印刷セミナー一覧
-class PrintListView(LoginRequiredMixin, View):
-    def get(self, request):
-        seminars = Seminar.objects.all().order_by('-id')
-        
-        for seminar in seminars:
-            seminar = is_member(seminar, request.user)
 
+
+# 印刷セミナー一覧（ログインが必要）
+class PrintListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
+    def get(self, request):
+        # セミナーを取得
+        seminars = Seminar.objects.all().order_by('-id')
+        # アクセス権限を判定してセミナーオブジェクトに属性を追加
+        for seminar in seminars:
+            seminar.is_accessible = self.is_member_access(
+                request.user,
+                seminar
+            )
+        # 印刷セミナー一覧ページをレンダリング
         return render(request, 'print_list.html', {'seminars': seminars})
 
-# 印刷ページのビュー
-class PrintView(MemberAuthorizationMixin, View):
+
+# 印刷ページのビュー（メンバー権限のアカウントが必要）
+class PrintView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, seminar_id, lecture_id=None):
-        
-        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # クエリパラメータからlecを取得
         lec_query = request.GET.get('lec')
         if lec_query:
             try:
                 lecture_id = int(lec_query)
             except ValueError:
                 raise Http404("Invalid lecture ID")
-        
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # ドキュメントを解析してレクチャーを取得
         doc = Doc(seminar.content)
-        
-        # レクチャーのみを印刷
-        if(lecture_id or lecture_id == 0):
-            # lecture = get_object_or_404(Lecture, uuid=lecture_id)
-            # lecture.content = markdownify(lecture.content)
-            # lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
-            # return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar, 'lec':True})
+
+        if lecture_id or lecture_id == 0:
+            # レクチャーのみを印刷
             lecture = doc.get_lecture(lecture_id)
+            # レクチャーが見つからない場合は404エラー
             if not lecture:
                 raise Http404("Lecture not found")
-            lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
-            return render(request, 'print.html', {'lectures': [lecture], 'seminar': seminar, 'lec':True})
+            # レクチャーの内容をHTMLに変換してリンクにtarget="_blank"を追加
+            lecture['content'] = re.sub(
+                r'<a', '<a target="_blank" ', lecture['content']
+            )
+            # ドキュメントページをレンダリング
+            return render(
+                request,
+                'print.html',
+                {'lectures': [lecture], 'seminar': seminar, 'lec': True}
+            )
         else:
             # セミナー全体を印刷
-            # lectures = seminar.lecture_set.all().order_by('id')
-            # for lecture in lectures:
-            #     lecture.content = markdownify(lecture.content)
-            #     lecture.content = re.sub(r'<a','<a target="_blank" ', lecture.content)
-            # return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
             lectures = doc.get_lectures()
+            # レクチャーの内容をHTMLに変換してリンクにtarget="_blank"を追加
             for lecture in lectures:
-                lecture['content'] = re.sub(r'<a','<a target="_blank" ', lecture['content'])
-            return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
+                lecture['content'] = re.sub(
+                    r'<a', '<a target="_blank" ', lecture['content']
+                )
+            # ドキュメントページをレンダリング
+            return render(
+                request,
+                'print.html',
+                {'lectures': lectures, 'seminar': seminar, 'lec': False}
+            )
+
 
 # ファイル保護ビュー
-class ProtectFileView(MemberAuthorizationMixin, View):
+class ProtectFileView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, uuid):
+        # ファイルを取得
         file = get_object_or_404(File, uuid=uuid)
-        
-        if not request.user.is_superuser:
-            if not file.seminar.public:
-                raise PermissionDenied
-            if not file.seminar.members_set.filter(user=request.user).exists() and not file.seminar.manager_set.filter(user=request.user).exists():
-                    raise PermissionDenied
-
+        # ファイルをレスポンスとして返す（開発環境と本番環境で処理を分ける）
         if settings.DEBUG:
-            response = FileResponse(file.file.open(), content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream')
+            # 開発環境ではFileResponseを使用して直接ファイルを返す
+            response = FileResponse(
+                file.file.open(),
+                content_type=mimetypes.guess_type(file.file.name)[0] or 'application/octet-stream'  # noqa: E501
+            )
         else:
-            
+            # 本番環境ではX-Accel-Redirectを使用してNginxにファイルの配信を任せる
             mime_type, _ = mimetypes.guess_type(file.file.name)
-        
             response = HttpResponse()
             response['Content-Type'] = mime_type or 'application/octet-stream'
             response['X-Accel-Redirect'] = f'/protect/{file.file.name}'
         file_name = f'{file.name}{os.path.splitext(file.file.name)[1]}'
         encode_file_name = urllib.parse.quote(file_name)
-        response['Content-Disposition'] = f'inline; filename*=UTF-8\'\'{encode_file_name}'
+        response['Content-Disposition'] = f'inline; filename*=UTF-8\'\'{encode_file_name}'  # noqa: E501
         return response
 
-# マネージリストページのビュー
-class ManagerListView(ManagerAuthorizationMixin, View):
+
+# マネージリストページのビュー（マネージャー権限のアカウントが必要）
+class ManagerListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
     def get(self, request):
+        # 管理対象のセミナーを取得
         seminars = Seminar.objects.filter(manage=True).order_by('-id')
-        
+        # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar = is_manager(seminar, request.user)
-            
+            seminar.is_accessible = self.is_manager_access(
+                request.user,
+                seminar
+            )
+        # マネージリストページをレンダリング
         return render(request, 'manage_list.html', {'seminars': seminars})
-    
-# マネージャーページのビュー
-class ManagerView(ManagerAuthorizationMixin, View):
+
+
+# マネージャーページのビュー（マネージャー権限のアカウントが必要）
+class ManagerView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
     def get(self, request, seminar_id):
+        # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # ドキュメントを解析してレクチャー数を取得
         lecture = Doc(seminar.content)
         lecture_count = lecture.get_lecture_count()
-        members = Members.objects.filter(seminar=seminar).order_by('-progress', '-last_access')
-        if not seminar.manage:
-            raise PermissionDenied
-        return render(request, 'manager.html', {'seminar': seminar, 'members': members, 'lecture_count': lecture_count, 'update_time': timezone.now()})
+        # メンバーを取得
+        members = Members.objects.filter(
+            seminar=seminar
+        ).order_by('-progress', '-last_access')
+        # マネージャーページをレンダリング
+        return render(
+            request,
+            'manager.html',
+            {
+                'seminar': seminar,
+                'members': members,
+                'lecture_count': lecture_count,
+                'update_time': timezone.now()
+            }
+        )
