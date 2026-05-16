@@ -95,11 +95,11 @@ class LoginMemberRequiredMixinTests(TestCase):
         # セミナーにメンバーとマネージャーを追加
         Members.objects.create(seminar=self.seminar, user=self.member_user)
         Manager.objects.create(seminar=self.seminar, user=self.manager_user)
-        
+
         # ファイルを作成
         self.file = File.objects.create(
             seminar=self.seminar,
-            title='Test File',
+            name='Test File',
             file='test.txt'
         )
 
@@ -188,7 +188,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         # ファイル詳細ビューにアクセス
         response = self.client.get(f'/dummy_file/{self.file.uuid}/')
         self.assertEqual(response.status_code, 200)
-        
+
     def test_member_access_file_staff_user(self):
         """
         スタッフユーザーはファイルにアクセスできることをテストする
@@ -199,7 +199,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         # ファイル詳細ビューにアクセス
         response = self.client.get(f'/dummy_file/{self.file.uuid}/')
         self.assertEqual(response.status_code, 200)
-        
+
     def test_member_access_file_member_user(self):
         """
         メンバーはファイルにアクセスできることをテストする
@@ -210,7 +210,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         # ファイル詳細ビューにアクセス
         response = self.client.get(f'/dummy_file/{self.file.uuid}/')
         self.assertEqual(response.status_code, 200)
-        
+
     def test_member_access_file_normal_user(self):
         """
         一般ユーザーはファイルにアクセスできないことをテストする
@@ -221,7 +221,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         # ファイル詳細ビューにアクセス
         response = self.client.get(f'/dummy_file/{self.file.uuid}/')
         self.assertEqual(response.status_code, 403)
-        
+
     def test_member_access_file_manager_user(self):
         """
         マネージャーはファイルにアクセスできることをテストする
@@ -232,6 +232,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         # ファイル詳細ビューにアクセス
         response = self.client.get(f'/dummy_file/{self.file.uuid}/')
         self.assertEqual(response.status_code, 200)
+
 
 @override_settings(ROOT_URLCONF=__name__)
 class LoginManagerRequiredMixinTests(TestCase):

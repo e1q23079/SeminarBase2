@@ -26,6 +26,10 @@ class LoginMemberRequiredMixin(MemberAuthorizationMixin):
             # 参加者アクセス権限がある場合はリクエストを処理する
             if self.is_member_access(request.user, file.seminar):
                 return super().dispatch(request, *args, **kwargs)
+        else:
+            # メンバーアクセス権限がある場合はリクエストを処理する
+            if self.is_member_access(request.user):
+                return super().dispatch(request, *args, **kwargs)
         # それ以外はアクセス拒否する
         raise PermissionDenied
 
