@@ -36,6 +36,14 @@ sh start_product.sh
 - `infra/ssl/nginx.crt`
 - `infra/ssl/nginx.key`
 
+#### migrate
+```bash
+# コンテナの中に入る
+docker container exec -it SeminarBase2_web bash
+# migrate
+python3 manage.py migrate
+```
+
 ## ウェブアプリケーションの終了
 ```bash
 # コンテナを終了
