@@ -1021,8 +1021,8 @@ class ProtectFileTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-# マネージャーページのビューテスト
-class ManagerViewTests(TestCase):
+# マネージャーリストページのビューテスト
+class ManagerListViewTests(TestCase):
     def setUp(self):
         '''
         テスト用のセミナーを作成する
@@ -1096,6 +1096,47 @@ class ManagerViewTests(TestCase):
         response = self.client.get('/manager')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'manage_list.html')
+
+    def test_manager_list_view_login_not_manager(self):
+        '''
+        マネージリストページのビューのテスト（ログインしている場合，マネージャーでないユーザー）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+
+        response = self.client.get('/manager')
+        self.assertEqual(response.status_code, 403)
+
+
+# マネージャーページのビューテスト
+class ManagerViewTests(TestCase):
+    def setUp(self):
+        '''
+        テスト用のセミナーを作成する
+        '''
+        self.seminar1 = Seminar.objects.create(
+            title='Test Seminar 1',
+            description='Test Description 1',
+            content='# Test Content 1\nTest Content 1',
+            manage=True,
+            public=True
+        )
+        self.seminar2 = Seminar.objects.create(
+            title='Test Seminar 2',
+            description='Test Description 2',
+            content='# Test Content 2\nTest Content 2',
+            manage=True,
+            public=True
+        )
+        self.seminar3 = Seminar.objects.create(
+            title='Test Seminar 3',
+            description='Test Description 3',
+            content='# Test Content 3\nTest Content 3',
+            manage=True,
+            public=False
+        )
 
     def test_manager_view_not_login(self):
         '''
