@@ -8,6 +8,7 @@ import re
 from django.http import Http404, HttpResponse, FileResponse
 from .lib.doc import Doc
 from .lib.authorization import MemberAuthorizationMixin, ManagerAuthorizationMixin
+from .lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
 from django.conf import settings
 import mimetypes
 from dotenv import load_dotenv
@@ -41,13 +42,10 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
         return render(request, 'seminar_list.html', {'seminars': seminars})
    
 # レクチャーリストページのビュー（メンバー権限のアカウントが必要）
-class LectureListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
+class LectureListView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, seminar_id):
         # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        # アクセス権限がない場合はアクセス拒否
-        if not self.is_member_access(request.user, seminar):
-            raise PermissionDenied
         # ドキュメントを解析してレクチャーリストを取得
         doc = Doc(seminar.content)
         lectures = doc.get_lecture_titles()
@@ -55,7 +53,7 @@ class LectureListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
         return render(request, 'lecture_list.html', {'seminar': seminar, 'lectures': lectures})
     
 # ドキュメントページのビュー（メンバー権限のアカウントが必要）
-class DocumentView(LoginRequiredMixin, MemberAuthorizationMixin, View):
+class DocumentView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, seminar_id):
         # クエリパラメータからlecを取得
         try:
@@ -64,9 +62,6 @@ class DocumentView(LoginRequiredMixin, MemberAuthorizationMixin, View):
             raise Http404("Invalid lecture ID")
         # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        # アクセス権限がない場合はアクセス拒否
-        if not self.is_member_access(request.user, seminar):
-            raise PermissionDenied
         # ドキュメントを解析してレクチャーを取得
         doc = Doc(seminar.content)
         lecture = doc.get_lecture(lec_id)
@@ -104,7 +99,7 @@ class PrintListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
         return render(request, 'print_list.html', {'seminars': seminars})
 
 # 印刷ページのビュー（メンバー権限のアカウントが必要）
-class PrintView(LoginRequiredMixin, MemberAuthorizationMixin, View):
+class PrintView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, seminar_id, lecture_id=None):
         # クエリパラメータからlecを取得
         lec_query = request.GET.get('lec')
@@ -115,9 +110,6 @@ class PrintView(LoginRequiredMixin, MemberAuthorizationMixin, View):
                 raise Http404("Invalid lecture ID")
         # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        # アクセス権限がない場合はアクセス拒否
-        if not self.is_member_access(request.user, seminar):
-            raise PermissionDenied
         # ドキュメントを解析してレクチャーを取得
         doc = Doc(seminar.content)
 
@@ -141,13 +133,10 @@ class PrintView(LoginRequiredMixin, MemberAuthorizationMixin, View):
             return render(request, 'print.html', {'lectures': lectures, 'seminar': seminar, 'lec':False})
 
 # ファイル保護ビュー
-class ProtectFileView(LoginRequiredMixin, MemberAuthorizationMixin, View):
+class ProtectFileView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
     def get(self, request, uuid):
         # ファイルを取得
         file = get_object_or_404(File, uuid=uuid)
-        # アクセス権限がない場合はアクセス拒否
-        if not self.is_member_access(request.user, file.seminar):
-            raise PermissionDenied
         # ファイルをレスポンスとして返す（開発環境と本番環境で処理を分ける）
         if settings.DEBUG:
             # 開発環境ではFileResponseを使用して直接ファイルを返す
@@ -164,27 +153,21 @@ class ProtectFileView(LoginRequiredMixin, MemberAuthorizationMixin, View):
         return response
 
 # マネージリストページのビュー（マネージャー権限のアカウントが必要）
-class ManagerListView(LoginRequiredMixin, ManagerAuthorizationMixin, View):
+class ManagerListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
     def get(self, request):
         # 管理対象のセミナーを取得
         seminars = Seminar.objects.filter(manage=True).order_by('-id')
-        # アクセス権限がない場合はアクセス拒否
-        if not self.is_manager_access(request.user):
-            raise PermissionDenied
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
             seminar.is_accessible = self.is_manager_access(request.user, seminar)
         # マネージリストページをレンダリング
         return render(request, 'manage_list.html', {'seminars': seminars})
     
-# マネージャーページのビュー
-class ManagerView(LoginRequiredMixin, ManagerAuthorizationMixin, View):
+# マネージャーページのビュー（マネージャー権限のアカウントが必要）
+class ManagerView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
     def get(self, request, seminar_id):
         # セミナーを取得
         seminar = get_object_or_404(Seminar, uuid=seminar_id)
-        # アクセス権限がない場合はアクセス拒否
-        if not self.is_manager_access(request.user, seminar):
-            raise PermissionDenied
         # 管理モードでない場合は404エラー
         if not seminar.manage:
             raise Http404("This seminar is not in management mode.")

@@ -2,7 +2,7 @@ from django.test import TestCase, override_settings
 from django.http import HttpResponse
 from django.views import View
 from django.urls import path
-from ..models import Seminar, User, Members, Manager
+from ..models import Seminar, User, Members, Manager, File
 from ..lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
 
 
@@ -33,6 +33,11 @@ urlpatterns = [
         'dummy_member/<uuid:seminar_id>/',
         DummyMemberView.as_view(),
         name='dummy_member_detail'
+    ),
+    path(
+        'dummy_file/<uuid:uuid>/',
+        DummyMemberView.as_view(),
+        name='dummy_file_detail'
     ),
     path(
         'dummy_manager/',
@@ -90,6 +95,13 @@ class LoginMemberRequiredMixinTests(TestCase):
         # セミナーにメンバーとマネージャーを追加
         Members.objects.create(seminar=self.seminar, user=self.member_user)
         Manager.objects.create(seminar=self.seminar, user=self.manager_user)
+        
+        # ファイルを作成
+        self.file = File.objects.create(
+            seminar=self.seminar,
+            title='Test File',
+            file='test.txt'
+        )
 
     def test_member_access_superuser(self):
         """
@@ -166,6 +178,60 @@ class LoginMemberRequiredMixinTests(TestCase):
         response = self.client.get(f'/dummy_member/{self.seminar.uuid}/')
         self.assertEqual(response.status_code, 200)
 
+    def test_member_access_file_superuser(self):
+        """
+        スーパーユーザーはファイルにアクセスできることをテストする
+        """
+        # スーパーユーザーでログイン
+        self.client.login(username='superuser', password='password')
+
+        # ファイル詳細ビューにアクセス
+        response = self.client.get(f'/dummy_file/{self.file.uuid}/')
+        self.assertEqual(response.status_code, 200)
+        
+    def test_member_access_file_staff_user(self):
+        """
+        スタッフユーザーはファイルにアクセスできることをテストする
+        """
+        # スタッフユーザーでログイン
+        self.client.login(username='staff', password='password')
+
+        # ファイル詳細ビューにアクセス
+        response = self.client.get(f'/dummy_file/{self.file.uuid}/')
+        self.assertEqual(response.status_code, 200)
+        
+    def test_member_access_file_member_user(self):
+        """
+        メンバーはファイルにアクセスできることをテストする
+        """
+        # メンバーでログイン
+        self.client.login(username='member', password='password')
+
+        # ファイル詳細ビューにアクセス
+        response = self.client.get(f'/dummy_file/{self.file.uuid}/')
+        self.assertEqual(response.status_code, 200)
+        
+    def test_member_access_file_normal_user(self):
+        """
+        一般ユーザーはファイルにアクセスできないことをテストする
+        """
+        # 一般ユーザーでログイン
+        self.client.login(username='normal', password='password')
+
+        # ファイル詳細ビューにアクセス
+        response = self.client.get(f'/dummy_file/{self.file.uuid}/')
+        self.assertEqual(response.status_code, 403)
+        
+    def test_member_access_file_manager_user(self):
+        """
+        マネージャーはファイルにアクセスできることをテストする
+        """
+        # マネージャーでログイン
+        self.client.login(username='manager', password='password')
+
+        # ファイル詳細ビューにアクセス
+        response = self.client.get(f'/dummy_file/{self.file.uuid}/')
+        self.assertEqual(response.status_code, 200)
 
 @override_settings(ROOT_URLCONF=__name__)
 class LoginManagerRequiredMixinTests(TestCase):
