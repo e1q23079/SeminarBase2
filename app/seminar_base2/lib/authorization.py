@@ -10,7 +10,7 @@ class BaseAuthorizationMixin():
         """
         return user.is_superuser or user.is_staff
 
-    def is_member(self, user: User, seminar: Seminar=None):
+    def is_member(self, user: User, seminar: Seminar = None):
         """
         ユーザーがセミナーの参加者であるかを判定するメソッド
         """
@@ -18,7 +18,7 @@ class BaseAuthorizationMixin():
             return seminar.members.filter(user=user).exists()
         return Members.objects.filter(user=user).exists()
 
-    def is_manager(self, user: User, seminar: Seminar=None):
+    def is_manager(self, user: User, seminar: Seminar = None):
         """
         ユーザーがセミナーのマネージャーであるかを判定するメソッド
         """
@@ -29,7 +29,7 @@ class BaseAuthorizationMixin():
 
 # 参加者認証ミックスイン
 class MemberAuthorizationMixin(BaseAuthorizationMixin):
-    def is_member_access(self, user: User, seminar: Seminar=None):
+    def is_member_access(self, user: User, seminar: Seminar = None):
         """
         参加者認証のロジックを定義するメソッド
         """
@@ -55,7 +55,7 @@ class MemberAuthorizationMixin(BaseAuthorizationMixin):
 
 # マネージャー認証ミックスイン
 class ManagerAuthorizationMixin(BaseAuthorizationMixin):
-    def is_manager_access(self, user: User, seminar: Seminar=None):
+    def is_manager_access(self, user: User, seminar: Seminar = None):
         """
         マネージャー認証のロジックを定義するメソッド
         """
