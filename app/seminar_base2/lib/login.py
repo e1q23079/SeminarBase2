@@ -14,8 +14,10 @@ class LoginMemberRequiredMixin(MemberAuthorizationMixin):
     def dispatch(self, request, *args, **kwargs):
         # セミナーIDを取得
         seminar_id = kwargs.get('seminar_id')
+        # ファイルUUIDを取得
         file_uuid = kwargs.get('uuid')
         if seminar_id:
+            # セミナーIDがある場合はセミナーを取得
             seminar = get_object_or_404(Seminar, uuid=seminar_id)
             # 参加者アクセス権限がある場合はリクエストを処理する
             if self.is_member_access(request.user, seminar):
