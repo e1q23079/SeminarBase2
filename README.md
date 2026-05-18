@@ -5,10 +5,7 @@
 ## ウェブアプリケーションの起動
 ### Cloudflare版
 ```bash
-# コンテナビルド
-docker compose build
-# コンテナを起動
-docker compose up -d
+docker compose -f docker-compose.cloudflare.yml up -d --build
 ```
 
 #### ウェブアプリケーションのURLを確認する
@@ -18,7 +15,10 @@ sh cloudflare_logs.sh
 
 ### Nginx版
 ```bash
-docker compose -f docker-compose.product.yml up -d --build
+# コンテナビルド
+docker compose build
+# コンテナを起動
+docker compose up -d
 ```
 
 ## スクリプトで起動する

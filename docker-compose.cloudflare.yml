@@ -13,15 +13,18 @@ services:
   nginx:
     build:
       context: ./infra
-      dockerfile: Dockerfile.product
+      dockerfile: Dockerfile.cloudflare
     container_name: SeminarBase2_nginx
     volumes:
       - static_volume:/static
       - ./app/media:/app/media
-    ports:
-      - "443:8080"
     depends_on:
       - web
-
+  cloudflare:
+    image: cloudflare/cloudflared:latest
+    container_name: SeminarBase2_cloudflare
+    command: tunnel --no-autoupdate --url http://nginx:8080
+    depends_on:
+      - nginx
 volumes:
   static_volume:
