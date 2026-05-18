@@ -24,11 +24,11 @@ docker compose up -d
 ## スクリプトで起動する
 ### Cloudflare版
 ```bash
-sh start.sh
+sh start_cloudflare.sh
 ```
 ### Nginx版
 ```bash
-sh start_product.sh 
+sh start.sh
 ```
 
 
