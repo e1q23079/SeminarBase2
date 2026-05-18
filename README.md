@@ -47,7 +47,7 @@ python3 manage.py migrate
 ## ウェブアプリケーションの終了
 ```bash
 # コンテナを終了
-docker compose down
+docker compose down --remove-orphans
 ```
 
 ## 環境変数
