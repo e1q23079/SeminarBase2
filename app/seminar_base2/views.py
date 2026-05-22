@@ -32,6 +32,9 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
     def get(self, request):
         # セミナーを取得
         seminars = Seminar.objects.all().order_by('-id')
+        # 公開セミナーのみを表示する（管理者・スタッフは除く）
+        if not self.is_superuser_or_staff(request.user):
+            seminars = seminars.filter(public=True)
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
             seminar.is_accessible = self.is_member_access(
