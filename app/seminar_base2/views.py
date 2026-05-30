@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from .models import Seminar, File, Members
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import os
 from django.utils import timezone
 import urllib.parse
+from .forms import SettingForm
 
 # 環境変数をロード
 load_dotenv()
@@ -229,3 +230,35 @@ class ManagerView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
                 'update_time': timezone.now()
             }
         )
+
+
+# 名前・パスワード設定ページのビュー
+class SettingView(LoginRequiredMixin, View):
+    def get(self, request):
+        # 名前・パスワード設定ページをレンダリング
+        return render(request, 'setting.html')
+
+    def post(self, request):
+        # フォームからデータを取得
+        form = SettingForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            # データが有効な場合は保存して成功メッセージを表示
+            form.save()
+            # セッションに成功フラグを設定して完了ページにリダイレクト
+            request.session['setting_success'] = True
+            return redirect('setting_complete')
+        else:
+            # データが無効な場合はエラーメッセージを表示
+            return render(request, 'setting.html', {'form': form})
+
+
+# 完了ページのビュー
+class CompleteView(View):
+    def get(self, request):
+        # セッションから成功フラグを取得
+        success = request.session.pop('setting_success', False)
+        if not success:
+            # 成功フラグがない場合は404エラー
+            raise Http404("Page not found")
+        # 完了ページをレンダリング
+        return render(request, 'setting_complete.html')
