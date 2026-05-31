@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Seminar, Members, User, File, Manager
+from .models import Seminar, Members, User, File, Manager, ResetRequest
 from django.utils.safestring import mark_safe
 
 
@@ -102,6 +102,14 @@ class FileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(File, FileAdmin)
+
+
+# 再設定要求モデルの管理画面設定
+class ResetRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name')
+
+
+admin.site.register(ResetRequest, ResetRequestAdmin)
 
 # 管理サイトのタイトルを変更
 admin.site.site_header = "SeminarBase2 管理者サイト"

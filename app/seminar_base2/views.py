@@ -1,9 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from .models import Seminar, File, Members
+from .models import Seminar, File, Members, ResetRequest
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
 import re
-from django.http import Http404, HttpResponse, FileResponse
+from django.http import (
+    Http404, HttpResponse, FileResponse
+)
 from .lib.doc import Doc
 from .lib.authorization import MemberAuthorizationMixin
 from .lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
@@ -234,6 +237,16 @@ class ManagerView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
 
 # 名前・パスワード設定ページのビュー
 class SettingView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 再設定要求が存在しない場合はアクセスを拒否
+        reset_request = ResetRequest.objects.filter(user=request.user).exists()
+        if not reset_request:
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, request):
         # 名前・パスワード設定ページをレンダリング
         return render(request, 'setting.html')
@@ -244,8 +257,6 @@ class SettingView(LoginRequiredMixin, View):
         if form.is_valid():
             # データが有効な場合は保存して成功メッセージを表示
             form.save()
-            # セッションに成功フラグを設定して完了ページにリダイレクト
-            request.session['setting_success'] = True
             return redirect('setting_complete')
         else:
             # データが無効な場合はエラーメッセージを表示
@@ -255,10 +266,5 @@ class SettingView(LoginRequiredMixin, View):
 # 完了ページのビュー
 class CompleteView(View):
     def get(self, request):
-        # セッションから成功フラグを取得
-        success = request.session.pop('setting_success', False)
-        if not success:
-            # 成功フラグがない場合は404エラー
-            raise Http404("Page not found")
         # 完了ページをレンダリング
         return render(request, 'setting_complete.html')
