@@ -57,7 +57,17 @@ urlpatterns = [
         'manager/<uuid:seminar_id>',
         views.ManagerView.as_view(),
         name='manager_view'
-    )
+    ),
+    path(
+            'setting',
+            views.SettingView.as_view(),
+            name='setting'
+        ),
+    path(
+            'setting/complete',
+            views.CompleteView.as_view(),
+            name='setting_complete'
+        ),
 ]
 
 if settings.DEBUG:

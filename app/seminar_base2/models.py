@@ -196,3 +196,25 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# 再設定要求モデル
+class ResetRequest(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="ユーザー"
+    )
+
+    # フルネームを表示するためのメソッド
+    def full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+    full_name.short_description = "名前"
+
+    class Meta:
+        verbose_name = "再設定要求"
+        verbose_name_plural = "「再設定要求」 一覧"
+
+    def __str__(self):
+        return self.user.username
