@@ -41,7 +41,7 @@ admin.site.register(Seminar, SeminarAdmin)
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
     fields = ('user', 'seminar')
-
+    ordering = ('seminar__title', 'user__username')
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "user":
@@ -61,6 +61,7 @@ admin.site.register(Members, MembersAdmin)
 # マネージャーモデルの管理画面設定
 class ManagerAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
+    ordering = ('seminar__title', 'user__username')
 
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -83,6 +84,8 @@ class FileAdmin(admin.ModelAdmin):
     list_display = ('name', 'file_link', 'seminar', 'file_url')
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
+
+    ordering = ('seminar__title', 'name')
 
     # ファイルを直接表示するためのメソッド
     def file_link(self, obj):
@@ -107,6 +110,7 @@ admin.site.register(File, FileAdmin)
 # 再設定要求モデルの管理画面設定
 class ResetRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name')
+    ordering = ('user__username',)
 
 
 admin.site.register(ResetRequest, ResetRequestAdmin)
