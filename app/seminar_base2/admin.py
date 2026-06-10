@@ -1,15 +1,18 @@
 from django.contrib import admin
 from .models import Seminar, Members, User, File, Manager, ResetRequest
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 
 admin.site.unregister(User)  # デフォルトのUserモデルをアンレジスターしてカスタムUserAdminを登録
 
+
+# カスタムユーザーモデルの管理画面設定
 class CustomUserAdmin(UserAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
+
 admin.site.register(User, CustomUserAdmin)
+
 
 # セミナーモデルの管理画面設定
 class SeminarAdmin(admin.ModelAdmin):
@@ -20,7 +23,7 @@ class SeminarAdmin(admin.ModelAdmin):
         'is_public',
         'is_manage'
     )
-    
+
     search_fields = ('title', 'description')
 
     # セミナーURLを表示するためのメソッド
@@ -51,10 +54,11 @@ admin.site.register(Seminar, SeminarAdmin)
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
     fields = ('user', 'seminar')
-    
+
     autocomplete_fields = ['user', 'seminar']
-    
+
     ordering = ('seminar__title', 'user__username')
+
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "user":
@@ -77,7 +81,7 @@ class ManagerAdmin(admin.ModelAdmin):
     fields = ('user', 'seminar')
 
     autocomplete_fields = ['user', 'seminar']
-    
+
     ordering = ('seminar__title', 'user__username')
 
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
@@ -101,7 +105,7 @@ class FileAdmin(admin.ModelAdmin):
     list_display = ('name', 'file_link', 'seminar', 'file_url')
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
-    
+
     autocomplete_fields = ['seminar']
 
     ordering = ('seminar__title', 'name')
@@ -131,7 +135,7 @@ class ResetRequestAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name')
 
     autocomplete_fields = ['user']
-    
+
     ordering = ('user__username',)
 
 
