@@ -38,7 +38,11 @@
                 {% else %}
                     <td>未設定</td>
                 {% endif %}
-                    <td>{{ member.progress }} / {{ lecture_count }}</td>
+                    {% if member.progress != 0 %}
+                    <td><a href="/doc/{{ seminar.uuid }}?lec={{ member.progress }}" target="_blank">{{ member.progress }} / {{ lecture_count }}</a></td>
+                {% else %}
+                    <td>0 / {{ lecture_count }}</td>
+                {% endif %}
                 {% if member.last_access %}
                     <td>{{ member.last_access|date:"Y-m-d H:i:s" }}</td>
                 {% else %}
