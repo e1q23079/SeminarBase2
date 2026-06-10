@@ -48,7 +48,7 @@ class MembersAdmin(admin.ModelAdmin):
             kwargs["queryset"] = User.objects.filter(
                 is_staff=False,
                 is_superuser=False
-            )
+            ).order_by('username')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     # セミナーでフィルタリングできるように設定
@@ -61,6 +61,7 @@ admin.site.register(Members, MembersAdmin)
 # マネージャーモデルの管理画面設定
 class ManagerAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
+    fields = ('user', 'seminar')
     ordering = ('seminar__title', 'user__username')
 
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
@@ -69,7 +70,7 @@ class ManagerAdmin(admin.ModelAdmin):
             kwargs["queryset"] = User.objects.filter(
                 is_staff=False,
                 is_superuser=False
-            )
+            ).order_by('username')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     # セミナーでフィルタリングできるように設定
