@@ -84,13 +84,13 @@ class Members(models.Model):
 
         ordering = ['user__username']
 
-    # 保存時にスタッフユーザーやスーパーユーザーを除外
-    def save(self, *args, **kwargs):
+    # スタッフユーザーやスーパーユーザーを除外
+    def clean(self):
         if self.user.is_staff or self.user.is_superuser:
-            raise ValueError(
-                "Staff users and superusers cannot be added as seminar members."    # noqa: E501
+            raise ValidationError(
+                "スタッフユーザーとスーパーユーザーは参加者として追加することはできません。"  # noqa: E501
             )
-        super().save(*args, **kwargs)
+        super().clean()
 
     def __str__(self):
         return self.user.username
@@ -137,20 +137,19 @@ class Manager(models.Model):
 
         ordering = ['user__username']
 
-    # セミナーが管理モードでない場合は保存できないようにする
     def clean(self):
+        # セミナーが管理モードでない場合は保存できないようにする
         if not self.seminar_id:
             raise ValidationError("セミナーを指定してください。")
         if not self.seminar.manage:
             raise ValidationError("このセミナーは管理モードではありません。")
 
-    # 保存時にスタッフユーザーやスーパーユーザーを除外
-    def save(self, *args, **kwargs):
+        # スタッフユーザーやスーパーユーザーを除外
         if self.user.is_staff or self.user.is_superuser:
-            raise ValueError(
-                "Staff users and superusers cannot be added as seminar staff."  # noqa: E501
+            raise ValidationError(
+                "スタッフユーザーとスーパーユーザーはマネージャーとして追加することはできません。"  # noqa: E501
             )
-        super().save(*args, **kwargs)
+        super().clean()
 
     def __str__(self):
         return self.user.username
