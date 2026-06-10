@@ -60,13 +60,14 @@ class MembersAdmin(admin.ModelAdmin):
     ordering = ('seminar__title', 'user__username')
 
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "user":
-            kwargs["queryset"] = User.objects.filter(
-                is_staff=False,
-                is_superuser=False
-            ).order_by('username')
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    # 検索利用のため、コメントアウトしておく
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == "user":
+    #         kwargs["queryset"] = User.objects.filter(
+    #             is_staff=False,
+    #             is_superuser=False
+    #         ).order_by('username')
+    #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
@@ -85,13 +86,14 @@ class ManagerAdmin(admin.ModelAdmin):
     ordering = ('seminar__title', 'user__username')
 
     # ユーザー選択時にスタッフユーザーやスーパーユーザーを除外
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "user":
-            kwargs["queryset"] = User.objects.filter(
-                is_staff=False,
-                is_superuser=False
-            ).order_by('username')
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    # 検索利用のため、コメントアウトしておく
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == "user":
+    #         kwargs["queryset"] = User.objects.filter(
+    #             is_staff=False,
+    #             is_superuser=False
+    #         ).order_by('username')
+    #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     # セミナーでフィルタリングできるように設定
     list_filter = ('seminar',)
