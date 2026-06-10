@@ -139,6 +139,8 @@ class Manager(models.Model):
 
     # セミナーが管理モードでない場合は保存できないようにする
     def clean(self):
+        if not self.seminar_id:
+            raise ValidationError("セミナーを指定してください。")
         if not self.seminar.manage:
             raise ValidationError("このセミナーは管理モードではありません。")
 
