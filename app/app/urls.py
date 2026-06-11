@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from seminar_base2 import views
+from seminar_base2 import api
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -57,6 +58,36 @@ urlpatterns = [
         'manager/<uuid:seminar_id>',
         views.ManagerView.as_view(),
         name='manager_view'
+    ),
+    path(
+        'manager/progress/<uuid:seminar_id>',
+        views.ManagerProgressView.as_view(),
+        name='manager_progress'
+    ),
+    path(
+        'manager/request/<uuid:seminar_id>',
+        views.ManagerRequestView.as_view(),
+        name='manager_request'
+    ),
+    path(
+        'api/manager/request_hash/<uuid:seminar_id>',
+        api.RequestHashView.as_view(),
+        name='api_request_hash'
+    ),
+    path(
+        'api/request/<uuid:seminar_id>',
+        api.RequestView.as_view(),
+        name='api_request'
+    ),
+    path(
+        'manager/request/reset/<uuid:seminar_id>/<str:username>',
+        views.ManagerRequestResetView.as_view(),
+        name='api_reset_request'
+    ),
+    path(
+        'manager/request/realtime/<uuid:seminar_id>',
+        views.ManagerRequestRealtimeView.as_view(),
+        name='manager_request_realtime'
     ),
     path(
             'setting',

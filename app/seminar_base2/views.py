@@ -86,6 +86,7 @@ class DocumentView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
             r'<a', '<a target="_blank" ', lecture['content']
         )
         # 進捗を更新（管理対象のセミナーのみ）
+        maneger_mode = False
         if seminar.manage:
             # メンバーのみ
             member = Members.objects.filter(
@@ -96,12 +97,14 @@ class DocumentView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
                 member.progress = lec_id
                 member.last_access = timezone.now()
                 member.save()
+                maneger_mode = True
         # ドキュメントページをレンダリング
         contents = {
             'lecture': lecture,
             'seminar': seminar,
             'nextId': lecture['next'],
-            'prevId': lecture['prev']
+            'prevId': lecture['prev'],
+            'manager_mode': maneger_mode
         }
         return render(request, 'document.html', contents)
 
@@ -215,6 +218,18 @@ class ManagerView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # 管理モードでない場合は404エラー
         if not seminar.manage:
             raise Http404("This seminar is not in management mode.")
+        # マネージャーページをレンダリング
+        return render(request, 'manager.html', {'seminar': seminar})
+
+
+# マネージャー進捗確認ページのビュー（マネージャー権限のアカウントが必要）
+class ManagerProgressView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
         # ドキュメントを解析してレクチャー数を取得
         lecture = Doc(seminar.content)
         lecture_count = lecture.get_lecture_count()
@@ -222,15 +237,87 @@ class ManagerView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         members = Members.objects.filter(
             seminar=seminar
         ).order_by('-progress', '-last_access')
-        # マネージャーページをレンダリング
+        # マネージャー進捗確認ページをレンダリング
         return render(
             request,
-            'manager.html',
+            'manager_progress.html',
             {
                 'seminar': seminar,
                 'members': members,
                 'lecture_count': lecture_count,
                 'update_time': timezone.now()
+            }
+        )
+
+
+# マネージャーリクエスト確認ページのビュー（マネージャー権限のアカウントが必要）
+class ManagerRequestView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # メンバーを取得
+        members = Members.objects.filter(
+            seminar=seminar
+        ).order_by('-request', 'last_request')
+        # マネージャーリクエスト確認ページをレンダリング
+        return render(
+            request,
+            'manager_request.html',
+            {
+                'seminar': seminar,
+                'members': members,
+                'update_time': timezone.now()
+            }
+        )
+
+
+# マネージャーリクエスト解除ページのビュー（マネージャー権限のアカウントが必要）
+class ManagerRequestResetView(
+    LoginRequiredMixin,
+    LoginManagerRequiredMixin,
+    View
+):
+    def post(self, request, seminar_id, username):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # メンバーを取得
+        member = get_object_or_404(
+            Members,
+            user__username=username,
+            seminar=seminar
+        )
+        if member.request:
+            member.request = False
+            member.last_request = None
+            member.save()
+        # マネージャーリクエスト確認ページにリダイレクト
+        return redirect('manager_request', seminar_id=seminar.uuid)
+
+
+# マネージャーリクエストリアルタイム確認ページのビュー（マネージャー権限のアカウントが必要）
+class ManagerRequestRealtimeView(
+    LoginRequiredMixin,
+    LoginManagerRequiredMixin,
+    View
+):
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # マネージャーリクエストリアルタイム確認ページをレンダリング
+        return render(
+            request,
+            'manager_request_realtime.html',
+            {
+                'seminar': seminar
             }
         )
 

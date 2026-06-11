@@ -26,6 +26,11 @@
     <li class="nav-item">
         <a class="nav-link" href="/lecture/{{ seminar.uuid }}">チャプター</a>
     </li>
+    {% if manager_mode %}
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#Modal">リクエスト</a>
+    </li>
+    {% endif %}
     <li class="nav-item">
         <a class="nav-link" href="/print/{{ seminar.uuid }}?lec={{ lecture.chapter }}" target="_blank">印刷ビュー</a>
     </li>
@@ -55,4 +60,22 @@
         </li>
     </ul>
 </nav>
+
+{% include "components/modal.html" with modal_message="本当にリクエストを送信しますか？" btn_type="button" %}
+
+{% include "components/livetoast.html" %}
+
+<script>
+    window.SEMINAR_ID = "{{ seminar.uuid }}";
+</script>
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script>
+    const requestBtn = document.getElementById('btn-confirm');
+    requestBtn.addEventListener('click', () => {
+        sendRequest();
+    });
+</script>
+
 {% endblock %}

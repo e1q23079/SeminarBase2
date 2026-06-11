@@ -66,6 +66,15 @@ class Members(models.Model):
         verbose_name="最終アクセス日時"
     )
 
+    request = models.BooleanField(default=False, verbose_name="リクエスト")
+
+    last_request = models.DateTimeField(
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name="最終リクエスト日時"
+    )
+
     # フルネームを表示するためのメソッド
     def full_name(self):
         return f"{self.user.last_name} {self.user.first_name}"
