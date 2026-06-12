@@ -80,3 +80,14 @@ const playNotificationSound = () => {
     const audio = new Audio('/static/file/notify.mp3');
     audio.play();
 }
+
+const copyToClipboard = (text) => {
+    /*
+        クリップボードにテキストをコピーする関数
+    */
+    navigator.clipboard.writeText(text).then(() => {
+        return showLiveToast("コピーしました");
+    }).catch(() => {
+        showLiveToast("コピーに失敗しました");
+    });
+}
