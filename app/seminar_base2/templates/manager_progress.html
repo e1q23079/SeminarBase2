@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ seminar.title }} - 進捗管理{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block css %}
+{% load static %}
+<style>
+.table>:not(caption)>*>* {
+    background-color: transparent !important;
+}
+.custom-tooltip{
+    --bs-tooltip-bg: #0d6efd !important;
+    --bs-tooltip-color: #fff !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>「{{ seminar.title }}」の進捗管理</h1>
+<p>このページでは、「<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a>」の進捗状況を表示しています。</p>
+<p class="back-link"><a href="/manager/{{ seminar.uuid }}">戻る</a> | <a href="/manager/progress/{{ seminar.uuid }}">更新</a></p>
+<p>更新日時: {{ update_time|date:"Y-m-d H:i:s" }}</p>
+<table class="table">
+    <thead>
+        <tr>
+        <th scope="col">ユーザー名</th>
+        <th scope="col">名前</th>
+        <th scope="col">進捗率</th>
+        <th scope="col">最終アクセス日時</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for member in members %}
+            <tr>
+                <th scope="row">{{ member.user.username }}</th>
+                {% if member.user.first_name and member.user.last_name %}
+                    <td>{{ member.user.last_name }} {{ member.user.first_name }}</td>
+                {% else %}
+                    <td>未設定</td>
+                {% endif %}
+                    {% if member.progress != 0 %}
+                    <td><a href="/doc/{{ seminar.uuid }}?lec={{ member.progress }}" target="_blank" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-custom-class="custom-tooltip" data-bs-title="{{ member.current_lecture_title }}">{{ member.progress }} / {{ lecture_count }}</a></td>
+                {% else %}
+                    <td>0 / {{ lecture_count }}</td>
+                {% endif %}
+                {% if member.last_access %}
+                    <td>{{ member.last_access|date:"Y-m-d H:i:s" }}</td>
+                {% else %}
+                    <td>未アクセス</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    });
+</script>
+
+{% endblock %}

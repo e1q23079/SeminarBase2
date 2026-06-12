@@ -12,6 +12,18 @@
         .btn_style {
             font-weight: bold;
         }
+        .copy-btn {
+            font-size: 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            opacity: 0.7;
+        }
+        pre{
+            position: relative;
+        }
     </style>
 {% endblock %}
 
@@ -26,6 +38,11 @@
     <li class="nav-item">
         <a class="nav-link" href="/lecture/{{ seminar.uuid }}">チャプター</a>
     </li>
+    {% if manager_mode %}
+    <li class="nav-item">
+        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#Modal">リクエスト</a>
+    </li>
+    {% endif %}
     <li class="nav-item">
         <a class="nav-link" href="/print/{{ seminar.uuid }}?lec={{ lecture.chapter }}" target="_blank">印刷ビュー</a>
     </li>
@@ -55,4 +72,17 @@
         </li>
     </ul>
 </nav>
+
+{% include "components/modal.html" with modal_message="本当にリクエストを送信しますか？" btn_type="button" %}
+
+{% include "components/livetoast.html" %}
+
+<script>
+    window.SEMINAR_ID = "{{ seminar.uuid }}";
+</script>
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script src="{% static 'js/doc.js' %}"></script>
+
 {% endblock %}

@@ -14,6 +14,64 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)
 
 
+# 参加者モデルの管理画面設定（インライン表示用）
+class MembersInline(admin.TabularInline):
+    model = Members
+    extra = 0
+    autocomplete_fields = ['user']
+    fields = ('user', 'full_name')
+    readonly_fields = ('full_name',)
+
+    ordering = ('user__username',)
+
+    @admin.display(description='名前')
+    # フルネームを表示するためのメソッド
+    def full_name(self, obj):
+        return f"{obj.user.last_name} {obj.user.first_name}"
+
+
+# マネージャーモデルの管理画面設定（インライン表示用）
+class ManagerInline(admin.TabularInline):
+    model = Manager
+    extra = 0
+    autocomplete_fields = ['user']
+    fields = ('user', 'full_name')
+    readonly_fields = ('full_name',)
+
+    ordering = ('user__username',)
+
+    @admin.display(description='名前')
+    # フルネームを表示するためのメソッド
+    def full_name(self, obj):
+        return f"{obj.user.last_name} {obj.user.first_name}"
+
+
+# ファイルモデルの管理画面設定（インライン表示用）
+class FileInline(admin.TabularInline):
+    model = File
+    extra = 0
+    fields = ('name', 'file', 'file_link', 'file_url')
+    readonly_fields = ('file_link', 'file_url')
+
+    ordering = ('name',)
+
+    # ファイルを直接表示するためのメソッド
+    def file_link(self, obj):
+        if obj.file:
+            return mark_safe(
+                f'<a href="/file/{obj.uuid}" target="_blank">ファイルを表示</a>'
+            )
+        return "No File"
+    file_link.short_description = "ファイルリンク"
+
+    # ファイルのURLを表示するためのメソッド
+    def file_url(self, obj):
+        if obj.file:
+            return f"/file/{obj.uuid}"
+        return "No File"
+    file_url.short_description = "ファイルURL"
+
+
 # セミナーモデルの管理画面設定
 class SeminarAdmin(admin.ModelAdmin):
     list_display = (
@@ -25,6 +83,8 @@ class SeminarAdmin(admin.ModelAdmin):
     )
 
     search_fields = ('title', 'description')
+
+    inlines = [FileInline, MembersInline, ManagerInline]
 
     # セミナーURLを表示するためのメソッド
     def seminar_link(self, obj):

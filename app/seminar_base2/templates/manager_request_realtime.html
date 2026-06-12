@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ seminar.title }} - リクエスト管理{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block css %}
+{% load static %}
+<style>
+    .box{
+        padding: 30px;
+        align-content: center;
+        border: rgb(13,110,253) solid 3px;
+        margin: 30px;
+        text-align: center;
+    }
+
+    .subject {
+        font-size: 25px;
+        font-weight: bold;
+    }
+
+    .count {
+        font-size: 23px;
+    }
+
+    .center{
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>「{{ seminar.title }}」のリクエストリアルタイム情報</h1>
+<p>このページでは、「<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a>」のリクエスト状況をリアルタイムで表示しています。</p>
+<p class="back-link"><a href="/manager/{{ seminar.uuid }}">戻る</a></p>
+<p id="update-time">更新日時: loading...</p>
+<div class="box">
+    
+    <p class="subject">リクエスト人数</p>
+    <p id="request-count" class="count">loading...</p>
+    <Button type="button" class="btn btn-primary" id="play-sound-btn">通知音を再生</Button>
+
+</div>
+<p class="center">リクエストのリアルタイム情報は、5秒ごとに自動で更新されます。</p>
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script>
+    const seminarId = "{{ seminar.uuid }}";
+    const updateInterval = 5000; // 5秒ごとに更新
+
+    let hash = null;
+
+    const render = async () => {
+        const { response, data } = await getRequest(`/api/manager/request_hash/${seminarId}`);
+
+        if(!response.ok) {
+            showLiveToast('リクエスト情報の取得に失敗しました');
+            return;
+        }
+
+        // 更新日時を表示
+        document.getElementById('update-time').textContent = `更新日時: ${data['time']}`;
+        // リクエスト人数を表示
+        document.getElementById('request-count').textContent = `${data['request_count']}人`;
+
+        // ハッシュ値を更新        
+        if(hash == null){
+            hash = data['hash'];
+        } else if(hash !== data['hash']) {
+            showLiveToast('リクエスト情報が更新されました');
+            hash = data['hash'];
+            playNotificationSound();
+        }
+    }
+
+    // ページが読み込まれたときにデータを取得
+    document.addEventListener('DOMContentLoaded', () => {
+        playNotificationSound();
+        render();
+        setInterval(render, updateInterval);
+    });
+
+    const playSoundBtn = document.getElementById('play-sound-btn');
+    playSoundBtn.addEventListener('click', () => {
+        playNotificationSound();
+    });
+</script>
+
+{% include "components/livetoast.html" %}
+
+{% endblock %}
