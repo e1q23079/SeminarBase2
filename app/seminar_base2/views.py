@@ -260,7 +260,7 @@ class ManagerProgressView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # メンバーを取得
         members = Members.objects.filter(
             seminar=seminar
-        ).order_by('-progress', '-last_access')
+        ).order_by('-progress', '-last_access', 'user__username')
         # メンバー情報に取り組み中のタイトルを追加
         for member in members:
             if member.progress and member.progress != 0:
@@ -293,7 +293,7 @@ class ManagerRequestView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # メンバーを取得
         members = Members.objects.filter(
             seminar=seminar
-        ).order_by('-request', 'last_request')
+        ).order_by('last_request', 'user__username')
         # マネージャーリクエスト確認ページをレンダリング
         return render(
             request,

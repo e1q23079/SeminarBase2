@@ -150,8 +150,9 @@ class Manager(models.Model):
         # セミナーが管理モードでない場合は保存できないようにする
         if not self.seminar_id:
             raise ValidationError("セミナーを指定してください。")
-        if not self.seminar.manage:
-            raise ValidationError("このセミナーは管理モードではありません。")
+        # セミナーが管理モードでない場合は保存できないようにする
+        # if not self.seminar.manage:
+        #     raise ValidationError("このセミナーは管理モードではありません。")
 
         # スタッフユーザーやスーパーユーザーを除外
         if self.user.is_staff or self.user.is_superuser:
