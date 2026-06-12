@@ -21,7 +21,7 @@
 
 {% block content %}
 <h1>「{{ seminar.title }}」の進捗管理</h1>
-<p>このページでは、「<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a>」の参加者進捗状況を表示しています。</p>
+<p>このページでは、「<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a>」の進捗状況を表示しています。</p>
 <p class="back-link"><a href="/manager/{{ seminar.uuid }}">戻る</a> | <a href="/manager/progress/{{ seminar.uuid }}">更新</a></p>
 <p>更新日時: {{ update_time|date:"Y-m-d H:i:s" }}</p>
 <table class="table">
