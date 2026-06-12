@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.views import View
 from .models import Seminar, File, Members, ResetRequest
+from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
 import re
@@ -36,6 +37,10 @@ class IndexView(View):
 class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
     def get(self, request):
         query = request.GET.get('q', '')
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
         # セミナーを取得
         seminars = Seminar.objects.all().order_by('-id')
         # クエリが存在する場合はタイトルと説明に対して部分一致検索を行う
@@ -54,13 +59,16 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
                 request.user,
                 seminar
             )
+        # セミナーを10件ごとに分割
+        paginator = Paginator(seminars, 10)
+        page_obj = paginator.get_page(page)
         # セミナーリストページをレンダリング
         return render(
             request,
             'seminar_list.html',
             {
-                'seminars': seminars,
-                'query': query
+                'query': query,
+                'page_obj': page_obj
             }
         )
 
