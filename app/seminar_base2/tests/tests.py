@@ -95,6 +95,48 @@ class SeminarListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'seminar_list.html')
 
+    def test_seminar_list_view_query(self):
+        '''
+        セミナーリストのビューのテスト（ログインしている場合，クエリ）
+        '''
+        User.objects.create_user(
+            username='testuser',
+            password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+
+        response = self.client.get('/seminar?query=Test')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'seminar_list.html')
+
+    def test_seminar_list_view_page_number(self):
+        '''
+        セミナーリストのビュー（ログインしている場合，ページ：数字）
+        '''
+        User.objects.create_user(
+            username='testuser',
+            password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+
+        response = self.client.get('/seminar?page=1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'seminar_list.html')
+
+    def test_seminar_list_view_page_invalid(self):
+        '''
+        セミナーリストのビュー（ログインしている場合，ページ：無効な値）
+        '''
+        User.objects.create_user(
+            username='testuser',
+            password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+
+        response = self.client.get('/seminar?page=abc')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'seminar_list.html')
+
 
 # レクチャーリストのビューテスト
 class LectureListViewTests(TestCase):
