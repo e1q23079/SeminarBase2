@@ -39,11 +39,14 @@ class RequestHashView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
             seminar=seminar,
             request=True
         ).count()
+        # 時間
+        now_time = timezone.localtime()
+        format_time = now_time.strftime('%Y-%m-%d %H:%M:%S')
         return JsonResponse(
             {
                 'status': 'success',
                 'hash': hash_value,
-                'time': timezone.now(),
+                'time': format_time,
                 'request_count': request_count
             }
         )
