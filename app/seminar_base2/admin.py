@@ -22,6 +22,8 @@ class MembersInline(admin.TabularInline):
     fields = ('user', 'full_name')
     readonly_fields = ('full_name',)
 
+    ordering = ('user__username',)
+
     @admin.display(description='名前')
     # フルネームを表示するためのメソッド
     def full_name(self, obj):
@@ -36,6 +38,8 @@ class ManagerInline(admin.TabularInline):
     fields = ('user', 'full_name')
     readonly_fields = ('full_name',)
 
+    ordering = ('user__username',)
+
     @admin.display(description='名前')
     # フルネームを表示するためのメソッド
     def full_name(self, obj):
@@ -48,6 +52,8 @@ class FileInline(admin.TabularInline):
     extra = 0
     fields = ('name', 'file', 'file_link', 'file_url')
     readonly_fields = ('file_link', 'file_url')
+
+    ordering = ('name',)
 
     # ファイルを直接表示するためのメソッド
     def file_link(self, obj):
