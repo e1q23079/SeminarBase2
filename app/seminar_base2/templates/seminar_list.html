@@ -5,6 +5,12 @@
 {% block css %}
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
+<style>
+.reset {
+    font-size: 0.9em;
+    text-align: right;
+}
+</style>
 {% endblock %}
 
 {% block navbar %}
@@ -15,6 +21,15 @@
 <h1>講座一覧</h1>
 <p>受講する講座を選択してください。</p>
 <p class="back-link"><a href="/">戻る</a></p>
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="講座を検索..." value="{{ query }}">
+        <button class="btn btn-primary" type="submit">検索</button>
+    </div>
+</form>
+{% if query %}
+    <p class="reset"><a href="/seminar">検索条件解除</a></p>
+{% endif %}
 <div class="card mb-4">
 {% for seminar in seminars %}
     <div class="card-body d-flex flex-column">
@@ -35,5 +50,9 @@
     {% endif %}
 {% endfor %}
 </div>
+
+{% if not seminars %}
+    <p>該当のセミナーするセミナーは存在しません。</p>
+{% endif %}
 
 {% endblock %}

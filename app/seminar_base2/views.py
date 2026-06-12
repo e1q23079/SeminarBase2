@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Q
 from django.views import View
 from .models import Seminar, File, Members, ResetRequest
 from django.core.exceptions import PermissionDenied
@@ -34,8 +35,16 @@ class IndexView(View):
 # セミナーリストページのビュー（ログインが必要）
 class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
     def get(self, request):
+        query = request.GET.get('q', '')
         # セミナーを取得
         seminars = Seminar.objects.all().order_by('-id')
+        # クエリが存在する場合はタイトルと説明に対して部分一致検索を行う
+        if query:
+            seminars = seminars.filter(
+                Q(title__icontains=query)
+                |
+                Q(description__icontains=query)
+            )
         # 公開セミナーのみを表示する（管理者・スタッフは除く）
         if not self.is_superuser_or_staff(request.user):
             seminars = seminars.filter(public=True)
@@ -46,7 +55,14 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
                 seminar
             )
         # セミナーリストページをレンダリング
-        return render(request, 'seminar_list.html', {'seminars': seminars})
+        return render(
+            request,
+            'seminar_list.html',
+            {
+                'seminars': seminars,
+                'query': query
+            }
+        )
 
 
 # レクチャーリストページのビュー（メンバー権限のアカウントが必要）
