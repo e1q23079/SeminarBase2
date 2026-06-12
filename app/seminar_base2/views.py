@@ -237,6 +237,14 @@ class ManagerProgressView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         members = Members.objects.filter(
             seminar=seminar
         ).order_by('-progress', '-last_access')
+        # メンバー情報に取り組み中のタイトルを追加
+        for member in members:
+            if member.progress and member.progress != 0:
+                lecture = Doc(seminar.content)
+                lec = lecture.get_lecture(member.progress)
+                member.current_lecture_title = lec['title'] if lec else '未取り組み'
+            else:
+                member.current_lecture_title = '未取り組み'
         # マネージャー進捗確認ページをレンダリング
         return render(
             request,
