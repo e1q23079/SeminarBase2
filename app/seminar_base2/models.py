@@ -189,7 +189,7 @@ class File(models.Model):
         verbose_name="UUID"
     )
 
-    name = models.CharField(max_length=255, verbose_name="ファイル名")
+    name = models.CharField(max_length=255, verbose_name="ファイル名", blank=True)
     seminar = models.ForeignKey(
         Seminar, on_delete=models.CASCADE,
         verbose_name="セミナー"
@@ -207,6 +207,11 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = os.path.basename(self.file.name)
+        super().save(*args, **kwargs)
 
 
 # 再設定要求モデル
