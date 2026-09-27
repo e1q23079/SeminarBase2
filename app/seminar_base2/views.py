@@ -55,7 +55,7 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
             seminars = seminars.filter(public=True)
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar.is_accessible = self.is_member_access(
+            seminar.is_accessible = self.is_member_access(  # type: ignore
                 request.user,
                 seminar
             )
@@ -140,7 +140,7 @@ class PrintListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
         seminars = Seminar.objects.all().order_by('-id')
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar.is_accessible = self.is_member_access(
+            seminar.is_accessible = self.is_member_access(  # type: ignore
                 request.user,
                 seminar
             )
@@ -226,7 +226,7 @@ class ManagerListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         seminars = Seminar.objects.filter(manage=True).order_by('-id')
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar.is_accessible = self.is_manager_access(
+            seminar.is_accessible = self.is_manager_access(  # type: ignore
                 request.user,
                 seminar
             )
@@ -266,9 +266,9 @@ class ManagerProgressView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
             if member.progress and member.progress != 0:
                 lecture = Doc(seminar.content)
                 lec = lecture.get_lecture(member.progress)
-                member.current_lecture_title = lec['title'] if lec else '未取り組み'
+                member.current_lecture_title = lec['title'] if lec else '未取り組み'    # type: ignore # noqa: E501
             else:
-                member.current_lecture_title = '未取り組み'
+                member.current_lecture_title = '未取り組み'  # type: ignore
         # マネージャー進捗確認ページをレンダリング
         return render(
             request,
