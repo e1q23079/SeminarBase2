@@ -21,7 +21,7 @@
         </div>
         <div class="mb-3">
             <label for="id_username" class="form-label">ユーザー名</label>
-            <input type="text" name="username" id="id_username" required class="form-control">
+            <input type="text" name="username" id="id_username" required class="form-control" value="{{ form.username.value|default_if_none:'' }}">
         </div>
         <div class="mb-3">
             <label for="id_password" class="form-label">パスワード</label>

@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ seminar.title }} - 参加受付{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block css %}
+{% load static %}
+<style>
+    .box{
+        padding: 30px;
+        align-content: center;
+        border: rgb(13,110,253) solid 3px;
+        text-align: center;
+    }
+
+    .subject {
+        font-size: 25px;
+        font-weight: bold;
+    }
+
+    .name {
+        font-size: 23px;
+    }
+
+    .center{
+        text-align: center;
+    }
+
+    #reload-btn {
+        margin-top: 20px;
+    }
+
+    .img-area {
+        width: 200px;
+        height: 200px;
+    }
+
+    .expiration_time {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>「{{ seminar.title }}」の参加受付</h1>
+<p>このページでは、「<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a>」の参加受付コードを表示しています。</p>
+<p class="back-link"><a href="/lecture/{{ seminar.uuid }}">戻る</a></p>
+{% if member.join %}
+    <p id="update-time">参加受付日時：{{ member.last_join|date:"Y-m-d H:i:s" }}</p>
+{% else %}
+    <p id="update-time">参加受付コード発行日時：{{ member.join_issued_at|date:"Y-m-d H:i:s" }}</p>
+{% endif %}
+
+<div class="box">
+    <p class="subject">{{ seminar.title }}</p>
+    <p class="name">
+        {% if member.user.first_name and member.user.last_name %}
+            {{ member.user.last_name }} {{ member.user.first_name }}
+        {% else %}
+            {{ member.user.username }}
+        {% endif %}
+    </p>
+    {% if member.join %}
+        <img src="{% static 'img/join.png' %}" alt="参加スタンプ" class="img-area">
+    {% else %}
+        <img src="data:image/png;base64,{{ img_area }}" alt="QRコード" class="img-area">
+    {% endif %}
+    <br>
+    <Button type="button" class="btn btn-primary" id="reload-btn">更新</Button>
+</div>
+{% if not member.join%}
+    <p class="center expiration_time">有効期限：{{ expiration_time|date:"Y-m-d H:i:s" }}</p>
+{% endif %}
+
+<script src="{% static 'js/api.js' %}"></script>
+
+<script>
+    const seminarId = "{{ seminar.uuid }}";
+    const updateInterval = 5000; // 5秒ごとに更新
+    let join = null;
+    let intervalId = null;
+
+    const render = async () => {
+        const { response, data } = await getRequest(`/api/join/${seminarId}`);
+
+        if(!response.ok) {
+            showLiveToast('データの取得に失敗しました');
+            return;
+        }
+
+        if (join === null) {
+            join = data.join;
+        }else{
+            if (join !== data.join) {
+                location.reload();
+            }
+        }
+
+        if (data.join){
+            clearInterval(intervalId);
+        }
+
+    }
+
+    // ページが読み込まれたときにデータを取得
+    document.addEventListener('DOMContentLoaded', () => {
+        render();
+        intervalId = setInterval(render, updateInterval);
+    });
+
+    const reloadBtn = document.getElementById('reload-btn');
+    reloadBtn.addEventListener('click', () => {
+        location.reload();
+    });
+</script>
+
+{% include "components/livetoast.html" %}
+
+{% endblock %}

@@ -14,7 +14,12 @@
 {% block content %}
 <h1>{{ seminar.title }}</h1>
 <p>チャプターを選択してください。</p>
-<p class="back-link"><a href="/seminar">戻る</a></p>
+<p class="back-link">
+    <a href="/seminar">戻る</a>
+    {% if seminar.manage and seminar.is_member %}
+        | <a href="/lecture/join/{{ seminar.uuid }}">参加受付</a>
+    {% endif %}
+</p>
 {% for lecture in lectures %}
 <p><a href="/doc/{{ seminar.uuid }}?lec={{ lecture.chapter }}" class="title">{{ lecture.title }}</a></p>
 {% endfor %}

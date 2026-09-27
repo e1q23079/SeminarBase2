@@ -46,6 +46,21 @@ urlpatterns = [
         views.PrintView.as_view(),
         name='print'
     ),
+    path(
+        'lecture/join/<uuid:seminar_id>',
+        views.JoinView.as_view(),
+        name='join'
+    ),
+    path(
+        'join/<uuid:seminar_id>',
+        views.JoinProcessView.as_view(),
+        name='join'
+    ),
+    path(
+        'api/join/<uuid:seminar_id>',
+        api.JoinView.as_view(),
+        name='api_join'
+    ),
     # Include markdownx URLs
     path('markdownx/', include('markdownx.urls')),
     path(
@@ -88,6 +103,16 @@ urlpatterns = [
         'manager/request/realtime/<uuid:seminar_id>',
         views.ManagerRequestRealtimeView.as_view(),
         name='manager_request_realtime'
+    ),
+    path(
+        'manager/join/<uuid:seminar_id>',
+        views.ManagerJoinListView.as_view(),
+        name='manager_join'
+    ),
+    path(
+        'manager/join/reset/<uuid:seminar_id>/<str:username>',
+        views.ManagerJoinResetView.as_view(),
+        name='api_reset_join'
     ),
     path(
             'setting',

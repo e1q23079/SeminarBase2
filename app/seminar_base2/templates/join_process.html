@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ seminar.title }} - 参加受付情報{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block css %}
+{% load static %}
+<style>
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>「{{ seminar.title }}」の参加受付情報</h1>
+<p>参加受付が完了しました。</p>
+{% comment %} <p class="back-link"><a href="/" onclick="window.close();">トップ</a></p> {% endcomment %}
+<p>講座名：<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a></p>
+<p>名前：
+    {% if member.user.first_name and member.user.last_name %}
+        {{ member.user.last_name }} {{ member.user.first_name }}
+    {% else %}
+        {{ member.user.username }}
+    {% endif %}
+</p>
+<p>参加受付日時：{{ member.last_join|date:"Y-m-d H:i:s" }}</p>
+{% endblock %}

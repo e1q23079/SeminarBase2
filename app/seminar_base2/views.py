@@ -5,11 +5,16 @@ from .models import Seminar, File, Members, ResetRequest
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
+import base64
+from io import BytesIO
 import re
+import uuid
+import qrcode
 from django.http import (
     Http404, HttpResponse, FileResponse
 )
 from .lib.doc import Doc
+from .lib.join import get_join_valid_until, is_join_valid
 from .lib.authorization import MemberAuthorizationMixin
 from .lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
 from django.conf import settings
@@ -55,7 +60,7 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
             seminars = seminars.filter(public=True)
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar.is_accessible = self.is_member_access(
+            seminar.is_accessible = self.is_member_access(  # type: ignore
                 request.user,
                 seminar
             )
@@ -81,6 +86,11 @@ class LectureListView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
         # ドキュメントを解析してレクチャーリストを取得
         doc = Doc(seminar.content)
         lectures = doc.get_lecture_titles()
+        # 参加者かどうかを判定してセミナーオブジェクトに属性を追加
+        seminar.is_member = Members.objects.filter(  # type: ignore
+            user=request.user,
+            seminar=seminar
+        ).first()
         # レクチャーリストページをレンダリング
         return render(
             request,
@@ -140,7 +150,7 @@ class PrintListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
         seminars = Seminar.objects.all().order_by('-id')
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar.is_accessible = self.is_member_access(
+            seminar.is_accessible = self.is_member_access(  # type: ignore
                 request.user,
                 seminar
             )
@@ -219,6 +229,136 @@ class ProtectFileView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
         return response
 
 
+# 参加受付ビュー
+class JoinView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        member = get_object_or_404(Members, user=request.user, seminar=seminar)
+        # 参加受け済みでない場合は参加受付コードを発行する
+        if not member.join:
+            now = timezone.now()
+            member.join_uuid = uuid.uuid4()
+            member.join_issued_at = now
+            member.save()
+            # 有効期限（1分）
+            expiration_time = get_join_valid_until(now)
+            join_url = request.build_absolute_uri(
+                f'/join/{seminar.uuid}?id={member.join_uuid}'
+            )
+            # QRコード生成
+            qr = qrcode.make(join_url)
+            buffer = BytesIO()
+            qr.save(buffer, 'PNG')
+            qr_code = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            buffer.close()
+            return render(
+                request,
+                'join.html',
+                {
+                    'seminar': seminar,
+                    'member': member,
+                    'expiration_time': expiration_time,
+                    'img_area': qr_code
+                }
+            )
+        return render(
+            request,
+            'join.html',
+            {'seminar': seminar, 'member': member}
+        )
+
+
+# 参加受付処理ページのビュー
+class JoinProcessView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # 参加受付コードを取得
+        join_uuid = request.GET.get('id')
+        if not join_uuid:
+            raise Http404("参加受付コードが指定されていません。")
+        member = get_object_or_404(
+            Members,
+            seminar=seminar,
+            join_uuid=join_uuid
+        )
+        # 参加受付済みの場合
+        if member.join:
+            raise Http404("参加受付済みです。")
+        # 有効期限をチェック
+        if member.join_issued_at is None:
+            raise Http404("存在しない参加受付コードです。")
+        now = timezone.now()
+        if not is_join_valid(member.join_issued_at, now):
+            raise Http404("参加受付コードの有効期限が切れています。")
+        # 参加受付を完了
+        member.join = True
+        member.last_join = now
+        member.save()
+        return render(
+            request,
+            'join_process.html',
+            {'seminar': seminar, 'member': member}
+        )
+
+
+# 参加受付リストページのビュー（マネージャー権限のアカウントが必要）
+class ManagerJoinListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # メンバーを取得
+        members = Members.objects.filter(
+            seminar=seminar
+        ).order_by('last_join', 'user__username')
+        # 参加受付リストページをレンダリング
+        return render(
+            request,
+            'manage_join.html',
+            {
+                'seminar': seminar,
+                'members': members,
+                'update_time': timezone.now()
+            }
+        )
+
+
+# 参加受付解除ページのビュー（マネージャー権限のアカウントが必要）
+class ManagerJoinResetView(
+    LoginRequiredMixin,
+    LoginManagerRequiredMixin,
+    View
+):
+    def post(self, request, seminar_id, username):
+        # セミナーを取得
+        seminar = get_object_or_404(Seminar, uuid=seminar_id)
+        # 管理モードでない場合は404エラー
+        if not seminar.manage:
+            raise Http404("This seminar is not in management mode.")
+        # メンバーを取得
+        member = get_object_or_404(
+            Members,
+            user__username=username,
+            seminar=seminar
+        )
+        if member.join:
+            member.join = False
+            member.last_join = None
+            member.save()
+        # 参加受付リストページにリダイレクト
+        return redirect('manager_join', seminar_id=seminar.uuid)
+
+
 # マネージリストページのビュー（マネージャー権限のアカウントが必要）
 class ManagerListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
     def get(self, request):
@@ -226,7 +366,7 @@ class ManagerListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         seminars = Seminar.objects.filter(manage=True).order_by('-id')
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:
-            seminar.is_accessible = self.is_manager_access(
+            seminar.is_accessible = self.is_manager_access(  # type: ignore
                 request.user,
                 seminar
             )
@@ -260,15 +400,15 @@ class ManagerProgressView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # メンバーを取得
         members = Members.objects.filter(
             seminar=seminar
-        ).order_by('-progress', '-last_access', 'user__username')
+        ).order_by('-join', '-progress', '-last_access', 'user__username')
         # メンバー情報に取り組み中のタイトルを追加
         for member in members:
             if member.progress and member.progress != 0:
                 lecture = Doc(seminar.content)
                 lec = lecture.get_lecture(member.progress)
-                member.current_lecture_title = lec['title'] if lec else '未取り組み'
+                member.current_lecture_title = lec['title'] if lec else '未取り組み'    # type: ignore # noqa: E501
             else:
-                member.current_lecture_title = '未取り組み'
+                member.current_lecture_title = '未取り組み'  # type: ignore
         # マネージャー進捗確認ページをレンダリング
         return render(
             request,
