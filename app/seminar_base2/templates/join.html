@@ -13,7 +13,6 @@
         padding: 30px;
         align-content: center;
         border: rgb(13,110,253) solid 3px;
-        margin: 0px 0px 20px 20px;
         text-align: center;
     }
 
@@ -37,6 +36,10 @@
     .img-area {
         width: 200px;
         height: 200px;
+    }
+
+    .expiration_time {
+        margin-top: 10px;
     }
 </style>
 {% endblock %}
@@ -69,7 +72,7 @@
     <Button type="button" class="btn btn-primary" id="reload-btn">更新</Button>
 </div>
 {% if not member.join%}
-    <p class="center">有効期限：{{ expiration_time|date:"Y-m-d H:i:s" }}</p>
+    <p class="center expiration_time">有効期限：{{ expiration_time|date:"Y-m-d H:i:s" }}</p>
 {% endif %}
 
 <script src="{% static 'js/api.js' %}"></script>
