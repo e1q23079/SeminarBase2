@@ -36,7 +36,7 @@
     <tbody>
         {% for member in members %}
             <tr>
-                <th scope="row">{{ member.user.username }}</th>
+                <th scope="row" {% if member.join %}class="text-success"{% endif %}>{{ member.user.username }}</th>
                 {% if member.user.first_name and member.user.last_name %}
                     <td>{{ member.user.last_name }} {{ member.user.first_name }}</td>
                 {% else %}

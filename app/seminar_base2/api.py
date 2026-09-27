@@ -96,3 +96,58 @@ class RequestView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
         member.last_request = timezone.now()
         member.save()
         return JsonResponse({'status': 'success', 'message': 'リクエストが送信されました'})
+
+
+class JoinView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
+    '''
+    参加受付情報のビュー
+    '''
+    def get(self, request, seminar_id):
+        # セミナーを取得
+        seminar = Seminar.objects.filter(uuid=seminar_id).first()
+        if not seminar:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'セミナーが見つかりませんでした'
+                },
+                status=404
+            )
+        # 管理モードでない場合は403エラー
+        if not seminar.manage:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'このセミナーは管理モードではありません'
+                },
+                status=403
+            )
+        # 参加者を取得
+        member = Members.objects.filter(
+            seminar=seminar,
+            user=request.user
+        ).first()
+        if not member:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': 'セミナーの参加者が見つかりませんでした'
+                },
+                status=404
+            )
+        if member.join:
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'join': True,
+                },
+                status=200
+            )
+        else:
+            return JsonResponse(
+                {
+                    'status': 'success',
+                    'join': False,
+                },
+                status=200
+            )

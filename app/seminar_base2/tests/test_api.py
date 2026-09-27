@@ -314,3 +314,156 @@ class RequestAPITests(TestCase):
             user=User.objects.get(username='testuser')
         )
         self.assertFalse(member.request)
+
+
+class JoinAPITests(TestCase):
+    '''
+    JoinViewのAPIテストケース
+    '''
+    def setUp(self):
+        '''
+        テスト用のセミナーを作成する
+        '''
+        self.seminar1 = Seminar.objects.create(
+            title='Test Seminar 1',
+            description='Test Description 1',
+            content='# Test Content 1\nTest Content 1',
+            manage=True,
+            public=True
+        )
+        self.seminar2 = Seminar.objects.create(
+            title='Test Seminar 2',
+            description='Test Description 2',
+            content='# Test Content 2\nTest Content 2',
+            manage=False,
+            public=True
+        )
+        self.seminar3 = Seminar.objects.create(
+            title='Test Seminar 3',
+            description='Test Description 3',
+            content='# Test Content 3\nTest Content 3',
+            manage=True,
+            public=False
+        )
+
+    def test_join_view_not_login(self):
+        '''
+        参加受付ページのビューのテスト（ログインしていない場合）
+        '''
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(
+            response,
+            f'/accounts/login/?next=/api/join/{self.seminar1.uuid}'
+        )
+
+    def test_join_view_login_not_member(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者でないユーザー）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 403)
+
+    def test_join_view_login_member(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser')
+        )
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+
+    def test_join_view_login_member_no_manage(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，管理機能オフのセミナー）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar2,
+            user=User.objects.get(username='testuser')
+        )
+        response = self.client.get(f'/api/join/{self.seminar2.uuid}')
+        self.assertEqual(response.status_code, 403)
+
+    def test_join_view_login_member_private_seminar(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，非公開セミナー）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar3,
+            user=User.objects.get(username='testuser')
+        )
+        response = self.client.get(f'/api/join/{self.seminar3.uuid}')
+        self.assertEqual(response.status_code, 403)
+
+    def test_join_view_login_member_with_join(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，すでに参加受付済み）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser'),
+            join=True
+        )
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertTrue(data['join'])
+
+    def test_join_view_login_member_without_join(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，まだ参加受付していない）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser'),
+            join=False
+        )
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertFalse(data['join'])
+
+    def test_join_view_login_manager(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーのマネージャーであるユーザー）
+        '''
+        user = User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        Manager.objects.create(user=user, seminar=self.seminar1)
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 404)
