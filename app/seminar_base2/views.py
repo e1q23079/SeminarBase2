@@ -361,7 +361,7 @@ class ManagerJoinListView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # メンバーを取得
         members = Members.objects.filter(
             seminar=seminar
-        ).order_by('last_join', 'user__username')
+        ).order_by('-last_join', 'user__username')
         # 参加受付リストページをレンダリング
         return render(
             request,
