@@ -283,21 +283,62 @@ class JoinProcessView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # 参加受付コードを取得
         join_uuid = request.GET.get('id')
         if not join_uuid:
-            raise Http404("参加受付コードが指定されていません。")
-        member = get_object_or_404(
-            Members,
+            return render(
+                request,
+                'message.html',
+                {
+                    'title': '参加受付エラー',
+                    'message': '参加受付コードが指定されていません。',
+                    'link': False
+                }
+            )
+        member = Members.objects.filter(
             seminar=seminar,
             join_uuid=join_uuid
-        )
+        ).first()
+        if not member:
+            return render(
+                request,
+                'message.html',
+                {
+                    'title': '参加受付エラー',
+                    'message': '参加受付コードが存在しません。',
+                    'link': False
+                }
+            )
         # 参加受付済みの場合
         if member.join:
-            raise Http404("参加受付済みです。")
+            return render(
+                request,
+                'message.html',
+                {
+                    'title': '参加受付済み',
+                    'message': 'すでに参加受付済みです。',
+                    'link': False
+                }
+            )
         # 有効期限をチェック
         if member.join_issued_at is None:
-            raise Http404("存在しない参加受付コードです。")
+            return render(
+                request,
+                'message.html',
+                {
+                    'title': '参加受付エラー',
+                    'message': '参加受付コードが発行されていません。',
+                    'link': False
+                }
+            )
         now = timezone.now()
         if not is_join_valid(member.join_issued_at, now):
-            raise Http404("参加受付コードの有効期限が切れています。")
+            return render(
+                request,
+                'message.html',
+                {
+                    'title': '参加受付エラー',
+                    'message': '参加受付コードの有効期限が切れています。',
+                    'link': False
+                }
+            )
         # 参加受付を完了
         member.join = True
         member.last_join = now
