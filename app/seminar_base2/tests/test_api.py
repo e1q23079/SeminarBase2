@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.utils import timezone
 from ..models import Seminar, Manager, User, Members
 
 
@@ -368,9 +369,9 @@ class JoinAPITests(TestCase):
         response = self.client.get(f'/api/join/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 403)
 
-    def test_join_view_login_member(self):
+    def test_join_view_login_member_no_join_code(self):
         '''
-        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー）
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，参加受付コード発行前）
         '''
         User.objects.create_user(
             username='testuser', password='testpassword'
@@ -381,10 +382,45 @@ class JoinAPITests(TestCase):
             user=User.objects.get(username='testuser')
         )
         response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 403)
+
+    def test_join_view_login_member_with_join_code(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，参加受付コード発行済み）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser'),
+            join_issued_at=timezone.now()
+        )
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'application/json')
         data = response.json()
         self.assertEqual(data['status'], 'success')
+
+    def test_join_view_login_member_expired_join_code(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，参加受付コード有効期限切れ）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser'),
+            join_issued_at='2023-01-01T00:00:00Z'
+        )
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['status'], 'expired')
 
     def test_join_view_login_member_no_manage(self):
         '''
@@ -435,26 +471,6 @@ class JoinAPITests(TestCase):
         data = response.json()
         self.assertEqual(data['status'], 'success')
         self.assertTrue(data['join'])
-
-    def test_join_view_login_member_without_join(self):
-        '''
-        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，まだ参加受付していない）
-        '''
-        User.objects.create_user(
-            username='testuser', password='testpassword'
-        )
-        self.client.login(username='testuser', password='testpassword')
-        Members.objects.create(
-            seminar=self.seminar1,
-            user=User.objects.get(username='testuser'),
-            join=False
-        )
-        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = response.json()
-        self.assertEqual(data['status'], 'success')
-        self.assertFalse(data['join'])
 
     def test_join_view_login_manager(self):
         '''

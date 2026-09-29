@@ -14,6 +14,7 @@
         align-content: center;
         border: rgb(13,110,253) solid 3px;
         text-align: center;
+        margin-bottom: 20px;
     }
 
     .subject {
@@ -64,9 +65,9 @@
         {% endif %}
     </p>
     {% if member.join %}
-        <img src="{% static 'img/join.png' %}" alt="参加スタンプ" class="img-area">
+        <img src="{% static 'img/join/join.png' %}" alt="参加スタンプ" class="img-area">
     {% else %}
-        <img src="data:image/png;base64,{{ img_area }}" alt="QRコード" class="img-area">
+        <img src="data:image/png;base64,{{ img_area }}" id="qr-code" alt="QRコード" class="img-area">
     {% endif %}
     <br>
     <Button type="button" class="btn btn-primary" id="reload-btn">更新</Button>
@@ -83,15 +84,26 @@
     let join = null;
     let intervalId = null;
 
+    const qrCodeElement = document.getElementById('qr-code');
+
     const render = async () => {
         const { response, data } = await getRequest(`/api/join/${seminarId}`);
 
         if(!response.ok) {
-            showLiveToast('データの取得に失敗しました');
+            showLiveToast('データの取得に失敗しました。');
+            clearInterval(intervalId);
+            qrCodeElement.src = "{% static 'img/join/fail.png' %}";
             return;
         }
 
-        if (join === null) {
+        if(data.status === 'expired') {
+            showLiveToast(data.message);
+            clearInterval(intervalId);
+            qrCodeElement.src = "{% static 'img/join/expired.png' %}";
+            return;
+        }
+
+        if (join === null && data.join !== undefined) {
             join = data.join;
         }else{
             if (join !== data.join) {
@@ -101,6 +113,7 @@
 
         if (data.join){
             clearInterval(intervalId);
+            return;
         }
 
     }

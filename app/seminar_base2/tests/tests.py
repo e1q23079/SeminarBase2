@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 from django.utils import timezone
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -2442,15 +2443,36 @@ class JoinProcessViewTests(TestCase):
 
     def test_join_process_view_public_seminar_no_code(self):
         '''
-        参加受付処理ページのビューのテスト（ログインしている場合，公開セミナー，コードなし）
+        参加受付処理ページのビューのテスト（管理者権限，公開セミナー，コードなし）
         '''
-        user = User.objects.create_user(
+        user = User.objects.create_superuser(
             username='testuser', password='testpassword'
         )
         Manager.objects.create(user=user, seminar=self.seminar1)
         self.client.login(username='testuser', password='testpassword')
         response = self.client.get(f'/join/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'message.html')
+
+    def test_join_process_view_public_seminar_expired_code(self):
+        '''
+        参加受付処理ページのビューのテスト（管理者権限，公開セミナー，有効期限切れの参加受付コード）
+        '''
+        user = User.objects.create_superuser(
+            username='testuser', password='testpassword'
+        )
+        member = Members.objects.create(
+            user=user,
+            seminar=self.seminar1,
+            join_issued_at=timezone.now() - timedelta(days=2),
+            join_uuid=uuid.uuid4()
+        )
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(
+            f'/join/{self.seminar1.uuid}?id={member.join_uuid}'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'message.html')
 
 
 # 参加受付管理ページのビューのテスト

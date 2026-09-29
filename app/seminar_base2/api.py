@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Seminar, Members
 
+from .lib.join import is_join_valid
 from .lib.members import get_last_request_time
 from .lib.hash import generate_hash
 from .lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
@@ -144,6 +145,23 @@ class JoinView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
                 status=200
             )
         else:
+            # 有効期限を確認する
+            if not member.join_issued_at:
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': '参加受付コードが発行されていません。'
+                    },
+                    status=403
+                )
+            if not is_join_valid(member.join_issued_at, timezone.now()):
+                return JsonResponse(
+                    {
+                        'status': 'expired',
+                        'message': '参加受付コードの有効期限が切れています。'
+                    },
+                    status=200
+                )
             return JsonResponse(
                 {
                     'status': 'success',
