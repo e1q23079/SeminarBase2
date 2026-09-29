@@ -17,11 +17,12 @@
 <p>参加受付が完了しました。</p>
 {% comment %} <p class="back-link"><a href="/" onclick="window.close();">トップ</a></p> {% endcomment %}
 <p>講座名：<a href="/lecture/{{ seminar.uuid }}" target="_blank">{{ seminar.title }}</a></p>
+<p>ユーザー名：{{ member.user.username }}</p>
 <p>名前：
     {% if member.user.first_name and member.user.last_name %}
         {{ member.user.last_name }} {{ member.user.first_name }}
     {% else %}
-        {{ member.user.username }}
+        未設定
     {% endif %}
 </p>
 <p>参加受付日時：{{ member.last_join|date:"Y-m-d H:i:s" }}</p>
