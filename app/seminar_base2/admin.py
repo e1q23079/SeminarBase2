@@ -94,6 +94,13 @@ class SeminarAdmin(admin.ModelAdmin):
 
     inlines = [FileInline, MembersInline, ManagerInline]
 
+    actions = ['reset_join']
+
+    @admin.action(description='参加受付状態をリセット')
+    def reset_join(self, request, queryset):
+        Members.objects.filter(seminar__in=queryset).update(join=False)
+        self.message_user(request, "選択されたセミナーの参加受付状態をリセットしました。")
+
     # セミナーURLを表示するためのメソッド
     def seminar_link(self, obj):
         if obj.uuid:

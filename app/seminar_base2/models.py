@@ -75,7 +75,7 @@ class Members(models.Model):
         verbose_name="最終リクエスト日時"
     )
 
-    join = models.BooleanField(default=False, verbose_name="参加受付状態")
+    join = models.BooleanField(default=False, verbose_name="参加受付")
 
     last_join = models.DateTimeField(
         default=None,
