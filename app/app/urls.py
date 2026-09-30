@@ -120,10 +120,20 @@ urlpatterns = [
             name='setting'
         ),
     path(
-            'setting/complete',
-            views.CompleteView.as_view(),
-            name='setting_complete'
+            'settings',
+            views.SettingMenuView.as_view(),
+            name='setting_menu'
         ),
+    path(
+            'settings/name',
+            views.SettingNameView.as_view(),
+            name='setting_name'
+        ),
+    path(
+            'settings/password',
+            views.SettingPasswordView.as_view(),
+            name='setting_password'
+        )
 ]
 
 if settings.DEBUG:

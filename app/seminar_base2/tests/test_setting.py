@@ -67,8 +67,8 @@ class SettingViewTest(TestCase):
             'first_name': 'Test',
             'last_name': 'User'
         })
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/setting/complete')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'setting_complete.html')
 
     def test_setting_view_post_wrong_old_password(self):
         """
@@ -125,8 +125,8 @@ class SettingViewTest(TestCase):
             'first_name': 'Test',
             'last_name': 'User'
         })
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/setting/complete')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'setting_complete.html')
 
         # # 設定完了ページにアクセスして200 OKが返ることを確認
         # response = self.client.get('/setting/complete')
@@ -184,8 +184,8 @@ class SettingViewTest(TestCase):
             'first_name': 'Test',
             'last_name': 'User'
         })
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/setting/complete')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'setting_complete.html')
 
         # 再設定要求が存在しないことを確認
         reset_request_exists = ResetRequest.objects.filter(

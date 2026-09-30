@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Seminar, Members, User, File, Manager, ResetRequest
+from .models import (
+    Seminar,
+    Members,
+    User,
+    File,
+    Manager,
+    ResetRequest,
+    NoSettingPermission
+)
 from django.contrib.auth.admin import UserAdmin
 from django.utils.safestring import mark_safe
 
@@ -14,7 +22,7 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)
 
 
-# 参加者モデルの管理画面設定（インライン表示用）
+# 受講者モデルの管理画面設定（インライン表示用）
 class MembersInline(admin.TabularInline):
     model = Members
     extra = 0
@@ -110,7 +118,7 @@ class SeminarAdmin(admin.ModelAdmin):
 admin.site.register(Seminar, SeminarAdmin)
 
 
-# 参加者モデルの管理画面設定
+# 受講者モデルの管理画面設定
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
     fields = ('user', 'seminar')
@@ -190,6 +198,18 @@ class FileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(File, FileAdmin)
+
+
+# 設定権限なしモデルの管理画面設定
+class NoSettingPermissionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name')
+
+    autocomplete_fields = ['user']
+
+    ordering = ('user__username',)
+
+
+admin.site.register(NoSettingPermission, NoSettingPermissionAdmin)
 
 
 # 再設定要求モデルの管理画面設定

@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}設定{% endblock %}
+
+{% block css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>設定</h1>
+<p>設定項目を選択してください。</p>
+<p class="back-link"><a href="/">戻る</a></p>
+
+<p><a href="/settings/name" class="title">名前を変更する</a></p>
+<p class="description">アカウントの名前を変更します。</p>
+
+<p><a href="/settings/password" class="title">パスワードを変更する</a></p>
+<p class="description">アカウントのパスワードを変更します。</p>
+
+{% endblock %}

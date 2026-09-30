@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}設定 - 名前を変更する{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>名前を変更する</h1>
+<p>アカウントの名前を変更します。</p>
+<p class="back-link"><a href="/settings">戻る</a></p>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row">
+        <!-- 名前の入力フィールド -->
+        <div class="col-md-6 mb-3">
+            <label for="last_name" class="form-label">姓</label>
+            <input type="text" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" name="last_name" value="{{ form.last_name.value|default:request.user.last_name }}">
+            {% for error in form.last_name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="first_name" class="form-label">名</label>
+            <input type="text" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" name="first_name" value="{{ form.first_name.value|default:request.user.first_name }}">
+            {% for error in form.first_name.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <button type="submit" class="btn btn-primary">保存</button>
+    </div>
+</form>
+
+{% endblock %}

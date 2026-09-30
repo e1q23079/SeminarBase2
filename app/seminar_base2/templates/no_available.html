@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}利用不可{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>利用不可</h1>
+<p>この機能は利用が制限されています。</p>
+{% if link %}
+    <a href="{{ link }}">{{ link_text }}</a>
+{% endif %}
+{% endblock %}

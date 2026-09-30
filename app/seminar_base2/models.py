@@ -34,7 +34,7 @@ class Seminar(models.Model):
         return self.title
 
 
-# 参加者モデル
+# 受講者モデル
 class Members(models.Model):
 
     uuid = models.UUIDField(
@@ -105,8 +105,8 @@ class Members(models.Model):
     full_name.short_description = "名前"
 
     class Meta:
-        verbose_name = "参加者"
-        verbose_name_plural = "「参加者」 一覧"
+        verbose_name = "受講者"
+        verbose_name_plural = "「受講者」 一覧"
 
         constraints = [
             models.UniqueConstraint(
@@ -121,7 +121,7 @@ class Members(models.Model):
     def clean(self):
         if self.user.is_staff or self.user.is_superuser:
             raise ValidationError(
-                "スタッフユーザーとスーパーユーザーは参加者として追加することはできません。"  # noqa: E501
+                "スタッフユーザーとスーパーユーザーは受講者として追加することはできません。"  # noqa: E501
             )
         super().clean()
 
@@ -255,6 +255,28 @@ class ResetRequest(models.Model):
     class Meta:
         verbose_name = "再設定要求"
         verbose_name_plural = "「再設定要求」 一覧"
+
+    def __str__(self):
+        return self.user.username
+
+
+# 設定権限なし
+class NoSettingPermission(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="ユーザー"
+    )
+
+    # フルネームを表示するためのメソッド
+    def full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+    full_name.short_description = "名前"
+
+    class Meta:
+        verbose_name = "設定機能制限"
+        verbose_name_plural = "「設定機能制限」 一覧"
 
     def __str__(self):
         return self.user.username

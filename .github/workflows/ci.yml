@@ -39,4 +39,4 @@ jobs:
 
       - name: Run test
         working-directory: app
-        run: python3 manage.py test
+        run: python3 manage.py test -v 2

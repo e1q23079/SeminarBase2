@@ -31,3 +31,38 @@ class SettingForm(PasswordChangeForm):
             # 再設定要求が存在する場合は削除
             ResetRequest.objects.filter(user=user).delete()
         return user
+
+
+class NameChangeForm(forms.Form):
+    """
+    名前変更フォーム
+    """
+    first_name = forms.CharField(
+        label='名前',
+        max_length=150,
+        required=False
+    )
+    last_name = forms.CharField(
+        label='姓',
+        max_length=150,
+        required=False
+    )
+
+    def save(self, user):
+        # 名前を保存
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.save()
+        return user
+
+
+class PasswordChangeCustomForm(PasswordChangeForm):
+    """
+    パスワード変更フォーム
+    """
+    def save(self, commit=True):
+        # パスワードを保存
+        user = super().save()
+        if commit:
+            user.save()
+        return user

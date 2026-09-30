@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}設定{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>設定</h1>
+<p>{{ message }}が完了しました。</p>
+<a href="/settings">戻る</a>
+{% endblock %}
