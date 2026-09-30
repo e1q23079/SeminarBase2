@@ -22,7 +22,7 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(User, CustomUserAdmin)
 
 
-# 参加者モデルの管理画面設定（インライン表示用）
+# 受講者モデルの管理画面設定（インライン表示用）
 class MembersInline(admin.TabularInline):
     model = Members
     extra = 0
@@ -118,7 +118,7 @@ class SeminarAdmin(admin.ModelAdmin):
 admin.site.register(Seminar, SeminarAdmin)
 
 
-# 参加者モデルの管理画面設定
+# 受講者モデルの管理画面設定
 class MembersAdmin(admin.ModelAdmin):
     list_display = ('user', 'full_name', 'seminar')
     fields = ('user', 'seminar')

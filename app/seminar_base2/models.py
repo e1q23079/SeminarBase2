@@ -34,7 +34,7 @@ class Seminar(models.Model):
         return self.title
 
 
-# 参加者モデル
+# 受講者モデル
 class Members(models.Model):
 
     uuid = models.UUIDField(
@@ -105,8 +105,8 @@ class Members(models.Model):
     full_name.short_description = "名前"
 
     class Meta:
-        verbose_name = "参加者"
-        verbose_name_plural = "「参加者」 一覧"
+        verbose_name = "受講者"
+        verbose_name_plural = "「受講者」 一覧"
 
         constraints = [
             models.UniqueConstraint(
@@ -121,7 +121,7 @@ class Members(models.Model):
     def clean(self):
         if self.user.is_staff or self.user.is_superuser:
             raise ValidationError(
-                "スタッフユーザーとスーパーユーザーは参加者として追加することはできません。"  # noqa: E501
+                "スタッフユーザーとスーパーユーザーは受講者として追加することはできません。"  # noqa: E501
             )
         super().clean()
 
