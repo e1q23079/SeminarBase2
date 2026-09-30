@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import Seminar, Members, User, File, Manager, ResetRequest
+from .models import (
+    Seminar,
+    Members,
+    User,
+    File,
+    Manager,
+    ResetRequest,
+    NoSettingPermission
+)
 from django.contrib.auth.admin import UserAdmin
 from django.utils.safestring import mark_safe
 
@@ -190,6 +198,18 @@ class FileAdmin(admin.ModelAdmin):
 
 
 admin.site.register(File, FileAdmin)
+
+
+# 設定権限なしモデルの管理画面設定
+class NoSettingPermissionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name')
+
+    autocomplete_fields = ['user']
+
+    ordering = ('user__username',)
+
+
+admin.site.register(NoSettingPermission, NoSettingPermissionAdmin)
 
 
 # 再設定要求モデルの管理画面設定

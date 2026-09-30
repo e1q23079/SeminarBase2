@@ -258,3 +258,25 @@ class ResetRequest(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+# 設定権限なし
+class NoSettingPermission(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="ユーザー"
+    )
+
+    # フルネームを表示するためのメソッド
+    def full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+    full_name.short_description = "名前"
+
+    class Meta:
+        verbose_name = "設定機能制限"
+        verbose_name_plural = "「設定機能制限」 一覧"
+
+    def __str__(self):
+        return self.user.username

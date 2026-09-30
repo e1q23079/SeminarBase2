@@ -1,10 +1,11 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.views import View
-from .models import Seminar, File, Members, ResetRequest
+from .models import Seminar, File, Members, ResetRequest, NoSettingPermission
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import update_session_auth_hash
 import base64
 from io import BytesIO
 import re
@@ -23,7 +24,7 @@ from dotenv import load_dotenv
 import os
 from django.utils import timezone
 import urllib.parse
-from .forms import SettingForm
+from .forms import SettingForm, NameChangeForm, PasswordChangeCustomForm
 
 # 環境変数をロード
 load_dotenv()
@@ -557,7 +558,8 @@ class SettingView(LoginRequiredMixin, View):
         if form.is_valid():
             # データが有効な場合は保存して成功メッセージを表示
             form.save()
-            return redirect('setting_complete')
+            update_session_auth_hash(request, form.user)  # パスワード変更後もログイン状態を維持
+            return render(request, 'setting_complete.html')
         else:
             # データが無効な場合はエラーメッセージを表示
             return render(request, 'setting.html', {'form': form})
@@ -568,3 +570,99 @@ class CompleteView(View):
     def get(self, request):
         # 完了ページをレンダリング
         return render(request, 'setting_complete.html')
+
+
+# 設定メニューのビュー
+class SettingMenuView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            return render(
+                request,
+                'no_available.html',
+                {
+                    'link': '/',
+                    'link_text': 'トップページへ'
+                }
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # 設定メニューのページをレンダリング
+        return render(request, 'settings/menu.html')
+
+
+# アカウント名変更ページのビュー
+class SettingNameView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # アカウント名変更ページをレンダリング
+        return render(request, 'settings/name.html')
+
+    def post(self, request):
+        # フォームからデータを取得
+        form = NameChangeForm(data=request.POST)
+        print(form.errors)  # デバッグ用にエラーを出力
+        if form.is_valid():
+            # データが有効な場合は保存して成功メッセージを表示
+            form.save(user=request.user)
+            return render(
+                request,
+                'settings/complete.html',
+                {'message': "名前の変更"}
+            )
+        else:
+            # データが無効な場合はエラーメッセージを表示
+            return render(request, 'settings/name.html', {'form': form})
+
+
+# パスワード変更ページのビュー
+class SettingPasswordView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # パスワード変更ページをレンダリング
+        return render(request, 'settings/password.html')
+
+    def post(self, request):
+        # フォームからデータを取得
+        form = PasswordChangeCustomForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            # データが有効な場合は保存して成功メッセージを表示
+            form.save()
+            update_session_auth_hash(request, form.user)  # パスワード変更後もログイン状態を維持
+            return render(
+                request,
+                'settings/complete.html',
+                {'message': "パスワードの変更"}
+            )
+        else:
+            # データが無効な場合はエラーメッセージを表示
+            return render(request, 'settings/password.html', {'form': form})
