@@ -87,7 +87,8 @@ class SeminarAdmin(admin.ModelAdmin):
         'seminar_link',
         'description',
         'is_public',
-        'is_manage'
+        'is_manage',
+        'is_join_flag'
     )
 
     search_fields = ('title', 'description')
@@ -117,8 +118,13 @@ class SeminarAdmin(admin.ModelAdmin):
     def is_manage(self, obj):
         return "有効" if obj.manage else "無効"
 
+    # 参加受付状況のステータス
+    def is_join_flag(self, obj):
+        return "有効" if obj.join_flag and obj.manage else "無効"
+
     is_public.short_description = "公開"
     is_manage.short_description = "管理機能"
+    is_join_flag.short_description = "参加受付"
     seminar_link.short_description = "セミナーURL"
 
 

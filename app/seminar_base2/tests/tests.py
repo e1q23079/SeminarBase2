@@ -1988,28 +1988,40 @@ class JoinViewTests(TestCase):
             description='Test Description 1',
             content='# Test Content 1\nTest Content 1',
             manage=True,
-            public=True
+            public=True,
+            join_flag=True
         )
         self.seminar2 = Seminar.objects.create(
             title='Test Seminar 2',
             description='Test Description 2',
             content='# Test Content 2\nTest Content 2',
             manage=True,
-            public=True
+            public=True,
+            join_flag=False
         )
         self.seminar3 = Seminar.objects.create(
             title='Test Seminar 3',
             description='Test Description 3',
             content='# Test Content 3\nTest Content 3',
             manage=True,
-            public=False
+            public=False,
+            join_flag=True
         )
         self.seminar4 = Seminar.objects.create(
             title='Test Seminar 4',
             description='Test Description 4',
             content='# Test Content 4\nTest Content 4',
             manage=False,
-            public=True
+            public=True,
+            join_flag=True
+        )
+        self.seminar5 = Seminar.objects.create(
+            title='Test Seminar 5',
+            description='Test Description 5',
+            content='# Test Content 5\nTest Content 5',
+            manage=True,
+            public=True,
+            join_flag=False
         )
 
     def test_join_view_not_login(self):
@@ -2238,6 +2250,20 @@ class JoinViewTests(TestCase):
         response = self.client.get(f'/lecture/join/{self.seminar4.uuid}')
         self.assertEqual(response.status_code, 404)
 
+    def test_join_view_login_member_join_flag_false(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，メンバーであるユーザー，参加受付フラグオフのセミナー）
+        '''
+        user = User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        Members.objects.create(user=user, seminar=self.seminar5)
+        self.client.login(username='testuser', password='testpassword')
+
+        response = self.client.get(f'/lecture/join/{self.seminar5.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'join.html')
+
 
 # 参加受付処理ページのビューのテスト
 class JoinProcessViewTests(TestCase):
@@ -2250,28 +2276,40 @@ class JoinProcessViewTests(TestCase):
             description='Test Description 1',
             content='# Test Content 1\nTest Content 1',
             manage=True,
-            public=True
+            public=True,
+            join_flag=True
         )
         self.seminar2 = Seminar.objects.create(
             title='Test Seminar 2',
             description='Test Description 2',
             content='# Test Content 2\nTest Content 2',
             manage=True,
-            public=True
+            public=True,
+            join_flag=True
         )
         self.seminar3 = Seminar.objects.create(
             title='Test Seminar 3',
             description='Test Description 3',
             content='# Test Content 3\nTest Content 3',
             manage=True,
-            public=False
+            public=False,
+            join_flag=True
         )
         self.seminar4 = Seminar.objects.create(
             title='Test Seminar 4',
             description='Test Description 4',
             content='# Test Content 4\nTest Content 4',
             manage=False,
-            public=True
+            public=True,
+            join_flag=True
+        )
+        self.seminar5 = Seminar.objects.create(
+            title='Test Seminar 5',
+            description='Test Description 5',
+            content='# Test Content 5\nTest Content 5',
+            manage=True,
+            public=True,
+            join_flag=False
         )
         self.test_uuid1 = uuid.uuid4()
         Members.objects.create(
@@ -2307,6 +2345,15 @@ class JoinProcessViewTests(TestCase):
             ),
             seminar=self.seminar4,
             join_uuid=self.test_uuid4,
+            join_issued_at=timezone.now()
+        )
+        self.test_uuid5 = uuid.uuid4()
+        Members.objects.create(
+            user=User.objects.create_user(
+                username='membertestuser5', password='testpassword'
+            ),
+            seminar=self.seminar5,
+            join_uuid=self.test_uuid5,
             join_issued_at=timezone.now()
         )
 
@@ -2470,6 +2517,26 @@ class JoinProcessViewTests(TestCase):
         self.client.login(username='testuser', password='testpassword')
         response = self.client.get(
             f'/join/{self.seminar1.uuid}?id={member.join_uuid}'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'message.html')
+
+    def test_join_process_view_public_seminar_join_flag_false(self):
+        '''
+        参加受付処理ページのビューのテスト（管理者権限，公開セミナー，参加受付フラグオフ）
+        '''
+        user = User.objects.create_superuser(
+            username='testuser', password='testpassword'
+        )
+        member = Members.objects.create(
+            user=user,
+            seminar=self.seminar5,
+            join_issued_at=timezone.now(),
+            join_uuid=uuid.uuid4()
+        )
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.get(
+            f'/join/{self.seminar5.uuid}?id={member.join_uuid}'
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'message.html')

@@ -145,6 +145,15 @@ class JoinView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
                 status=200
             )
         else:
+            # 参加受付が有効でない場合
+            if not seminar.join_flag:
+                return JsonResponse(
+                    {
+                        'status': 'closed',
+                        'message': 'このセミナーは参加受付を行っていません。'
+                    },
+                    status=200
+                )
             # 有効期限を確認する
             if not member.join_issued_at:
                 return JsonResponse(

@@ -330,21 +330,24 @@ class JoinAPITests(TestCase):
             description='Test Description 1',
             content='# Test Content 1\nTest Content 1',
             manage=True,
-            public=True
+            public=True,
+            join_flag=True
         )
         self.seminar2 = Seminar.objects.create(
             title='Test Seminar 2',
             description='Test Description 2',
             content='# Test Content 2\nTest Content 2',
             manage=False,
-            public=True
+            public=True,
+            join_flag=True
         )
         self.seminar3 = Seminar.objects.create(
             title='Test Seminar 3',
             description='Test Description 3',
             content='# Test Content 3\nTest Content 3',
             manage=True,
-            public=False
+            public=False,
+            join_flag=True
         )
 
     def test_join_view_not_login(self):
@@ -483,3 +486,43 @@ class JoinAPITests(TestCase):
         self.client.login(username='testuser', password='testpassword')
         response = self.client.get(f'/api/join/{self.seminar1.uuid}')
         self.assertEqual(response.status_code, 404)
+
+    def test_join_view_login_member_join_flag_false_and_no_join(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，参加受付フラグがFalse，まだ参加受付していない）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser'),
+        )
+        self.seminar1.join_flag = False
+        self.seminar1.save()
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['status'], 'closed')
+
+    def test_join_view_login_member_join_flag_false_and_join(self):
+        '''
+        参加受付ページのビューのテスト（ログインしている場合，セミナーの参加者であるユーザー，参加受付フラグがFalse，すでに参加受付済み）
+        '''
+        User.objects.create_user(
+            username='testuser', password='testpassword'
+        )
+        self.client.login(username='testuser', password='testpassword')
+        Members.objects.create(
+            seminar=self.seminar1,
+            user=User.objects.get(username='testuser'),
+            join=True
+        )
+        response = self.client.get(f'/api/join/{self.seminar1.uuid}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/json')
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertTrue(data['join'])
