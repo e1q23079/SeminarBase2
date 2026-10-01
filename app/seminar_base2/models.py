@@ -24,6 +24,8 @@ class Seminar(models.Model):
 
     manage = models.BooleanField(default=False, verbose_name="管理モード")
 
+    join_flag = models.BooleanField(default=False, verbose_name="参加受付")
+
     class Meta:
         verbose_name = "セミナー"
         verbose_name_plural = "「セミナー」 一覧"

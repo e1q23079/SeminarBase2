@@ -51,7 +51,7 @@
 <p class="back-link"><a href="/lecture/{{ seminar.uuid }}">戻る</a></p>
 {% if member.join %}
     <p id="update-time">参加受付日時：{{ member.last_join|date:"Y-m-d H:i:s" }}</p>
-{% else %}
+{% elif seminar.join_flag %}
     <p id="update-time">参加受付コード発行日時：{{ member.join_issued_at|date:"Y-m-d H:i:s" }}</p>
 {% endif %}
 
@@ -66,13 +66,15 @@
     </p>
     {% if member.join %}
         <img src="{% static 'img/join/join.png' %}" alt="参加スタンプ" class="img-area">
+    {% elif not seminar.join_flag %}
+        <img src="{% static 'img/join/closed.png' %}" alt="期間外" class="img-area">
     {% else %}
         <img src="data:image/png;base64,{{ img_area }}" id="qr-code" alt="QRコード" class="img-area">
     {% endif %}
     <br>
     <Button type="button" class="btn btn-primary" id="reload-btn">更新</Button>
 </div>
-{% if not member.join%}
+{% if not member.join and seminar.join_flag %}
     <p class="center expiration_time">有効期限：{{ expiration_time|date:"Y-m-d H:i:s" }}</p>
 {% endif %}
 
@@ -100,6 +102,13 @@
             showLiveToast(data.message);
             clearInterval(intervalId);
             qrCodeElement.src = "{% static 'img/join/expired.png' %}";
+            return;
+        }
+
+        if(data.status === 'closed') {
+            showLiveToast(data.message);
+            clearInterval(intervalId);
+            qrCodeElement.src = "{% static 'img/join/closed.png' %}";
             return;
         }
 

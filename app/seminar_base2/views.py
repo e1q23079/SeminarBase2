@@ -239,6 +239,13 @@ class JoinView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
         if not seminar.manage:
             raise Http404("This seminar is not in management mode.")
         member = get_object_or_404(Members, user=request.user, seminar=seminar)
+        # 参加を受け付けていない場合は，期間外とする
+        if not seminar.join_flag:
+            return render(
+                request,
+                'join.html',
+                {'seminar': seminar, 'member': member}
+            )
         # 参加受け済みでない場合は参加受付コードを発行する
         if not member.join:
             now = timezone.now()
@@ -281,6 +288,17 @@ class JoinProcessView(LoginRequiredMixin, LoginManagerRequiredMixin, View):
         # 管理モードでない場合は404エラー
         if not seminar.manage:
             raise Http404("This seminar is not in management mode.")
+        # 参加受付が有効でない場合
+        if not seminar.join_flag:
+            return render(
+                request,
+                'message.html',
+                {
+                    'title': '参加受付エラー',
+                    'message': 'このセミナーは参加受付を行っていません。',
+                    'link': False
+                }
+            )
         # 参加受付コードを取得
         join_uuid = request.GET.get('id')
         if not join_uuid:
