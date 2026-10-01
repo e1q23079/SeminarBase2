@@ -1,6 +1,8 @@
 # Raspberry Pi セットアップ
 
 ## Dockerの実行設定
+
+## スワップ領域の設定
 スワップ領域の状態を確認
 ```bash
 sudo swapon --show
