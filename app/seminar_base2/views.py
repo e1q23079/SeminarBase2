@@ -92,6 +92,12 @@ class LectureListView(LoginRequiredMixin, LoginMemberRequiredMixin, View):
             user=request.user,
             seminar=seminar
         ).first()
+        # 参加受付済みかどうかを判定してセミナーオブジェクトに属性を追加
+        seminar.is_joined = Members.objects.filter(  # type: ignore
+            user=request.user,
+            seminar=seminar,
+            join=True
+        ).first()
         # レクチャーリストページをレンダリング
         return render(
             request,

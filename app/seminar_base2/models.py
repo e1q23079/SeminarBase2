@@ -26,6 +26,12 @@ class Seminar(models.Model):
 
     join_flag = models.BooleanField(default=False, verbose_name="参加受付")
 
+    participation_benefits = models.URLField(
+        verbose_name="参加特典URL",
+        blank=True,
+        null=True
+    )
+
     class Meta:
         verbose_name = "セミナー"
         verbose_name_plural = "「セミナー」 一覧"

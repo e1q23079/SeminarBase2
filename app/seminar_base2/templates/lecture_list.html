@@ -19,6 +19,9 @@
     {% if seminar.manage and seminar.is_member %}
         | <a href="/lecture/join/{{ seminar.uuid }}">参加受付</a>
     {% endif %}
+    {% if seminar.manage and seminar.is_member and seminar.participation_benefits and seminar.is_joined %}
+        | <a href="{{ seminar.participation_benefits }}" target="_blank">参加特典</a>
+    {% endif %}
 </p>
 {% for lecture in lectures %}
 <p><a href="/doc/{{ seminar.uuid }}?lec={{ lecture.chapter }}" class="title">{{ lecture.title }}</a></p>
