@@ -1,0 +1,28 @@
+services:
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: SeminarBase2_web
+    volumes:
+      - static_volume:/app/staticfiles
+      - ./app/db:/app/db
+      - ./app/media:/app/media
+    env_file:
+      - .env
+  nginx:
+    build:
+      context: ./infra
+      dockerfile: Dockerfile.simple
+    container_name: SeminarBase2_nginx
+    volumes:
+      - static_volume:/static
+      - ./app/media:/app/media
+      - ./infra/logs:/var/log/nginx
+    ports:
+      - "80:8080"
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
