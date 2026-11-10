@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'seminar_base2.apps.SeminarBase2Config',
     # 'markdownx',
     'django_cleanup.apps.CleanupConfig',
+    'maintenancemode',
 ]
 
 MIDDLEWARE = [
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'maintenancemode.middleware.MaintenanceModeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'seminar_base2.middleware.SettingRequestMiddleware',
@@ -152,3 +154,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # ファイルアップロードのサイズ制限（100MB）
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+
+# メンテナンスモードの設定
+MAINTENANCE_IGNORE_URLS = [
+    r'^/adminlogin/$',
+    r'^/adminlogout/$',
+]
