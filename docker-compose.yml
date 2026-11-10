@@ -20,6 +20,7 @@ services:
       - ./app/media:/app/media
     ports:
       - "443:8080"
+      - "80:8081"
     depends_on:
       - web
 
