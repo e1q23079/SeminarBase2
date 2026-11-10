@@ -21,6 +21,7 @@ services:
       - ./infra/logs:/var/log/nginx
     environment:
       - PROXY_IP=${PROXY_IP}
+      - TZ=Asia/Tokyo
     env_file:
       - .env
     ports:
