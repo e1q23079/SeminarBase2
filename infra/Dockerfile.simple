@@ -1,4 +1,4 @@
 # nginxの公式イメージをベースに使用
 FROM nginx:latest
 # カスタムnginx設定ファイルをコピー
-COPY defalt.simple.conf /etc/nginx/conf.d/defalt.conf
+COPY defalt.simple.conf.template /etc/nginx/templates/default.conf.template
