@@ -19,6 +19,8 @@ services:
       - static_volume:/static
       - ./app/media:/app/media
       - ./infra/logs:/var/log/nginx
+    environment:
+      - TZ=Asia/Tokyo
     ports:
       - "443:8080"
       - "80:8081"
