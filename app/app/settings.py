@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'seminar_base2.apps.SeminarBase2Config',
     # 'markdownx',
     'django_cleanup.apps.CleanupConfig',
-    'maintenancemode',
+    'maintenance_mode',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'maintenancemode.middleware.MaintenanceModeMiddleware',
+    'maintenance_mode.middleware.MaintenanceModeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'seminar_base2.middleware.SettingRequestMiddleware',
