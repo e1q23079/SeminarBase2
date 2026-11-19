@@ -1,5 +1,5 @@
 # pythonの公式イメージをベースに使用
-FROM python:latest
+FROM python:3.15.2-slim
 # 作業ディレクトリを設定
 WORKDIR /app
 # pipを最新バージョンにアップグレード
