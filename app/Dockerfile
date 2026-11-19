@@ -1,4 +1,4 @@
-# nginxの公式イメージをベースに使用
+# pythonの公式イメージをベースに使用
 FROM python:latest
 # 作業ディレクトリを設定
 WORKDIR /app
