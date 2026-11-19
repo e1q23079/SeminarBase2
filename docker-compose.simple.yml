@@ -8,6 +8,7 @@ services:
       - static_volume:/app/staticfiles
       - ./app/db:/app/db
       - ./app/media:/app/media
+      - ./app/config:/app/config
     env_file:
       - .env
   nginx:
