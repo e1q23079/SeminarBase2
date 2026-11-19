@@ -1,4 +1,4 @@
 # nginxの公式イメージをベースに使用
-FROM nginx:latest
+FROM nginx:1.30.7
 # カスタムnginx設定ファイルをコピー
 COPY defalt.simple.conf.template /etc/nginx/templates/default.conf.template
