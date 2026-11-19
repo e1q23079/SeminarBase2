@@ -8,3 +8,4 @@ media/
 *.crt
 *.csr
 *.log
+maintenance_mode_state.txt
