@@ -1,3 +1,4 @@
+from .videomarkdown import convert_video_markdown
 from bs4 import BeautifulSoup
 import markdown
 import bleach
@@ -13,6 +14,8 @@ class Doc:
         temp_content = None
         title = "無題"
         now_chapter = 1
+
+        content = convert_video_markdown(content)
 
         html_content = markdown.markdown(
             content,
@@ -80,7 +83,8 @@ class Doc:
                     'th',
                     'td',
                     'img',
-                    'a'
+                    'a',
+                    'video'
                 ],
                 attributes={
                     'a':
@@ -92,6 +96,12 @@ class Doc:
                         [
                             'src',
                             'alt'
+                        ],
+                    'video':
+                        [
+                            'src',
+                            'controls',
+                            'controlslist'
                         ]
                     },
                 strip=True
