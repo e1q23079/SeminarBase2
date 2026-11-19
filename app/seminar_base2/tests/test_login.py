@@ -159,24 +159,24 @@ class LoginMemberRequiredMixinTests(TestCase):
 
     def test_member_access_staff_user_public(self):
         """
-        スタッフユーザーはアクセスできることをテストする
+        スタッフユーザーはアクセスできないことをテストする
         """
         # スタッフユーザーでログイン
         self.client.login(username='staff', password='password')
 
         # メンバービューにアクセス
         response = self.client.get('/dummy_member/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
         # メンバービューにセミナーIDを指定してアクセス
         response = self.client.get(
             f'/dummy_member/{self.seminar_public.uuid}/'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_member_access_staff_user_private(self):
         """
-        スタッフユーザーは非公開セミナーにもアクセスできることをテストする
+        スタッフユーザーは非公開セミナーにもアクセスできないことをテストする
         """
         # スタッフユーザーでログイン
         self.client.login(username='staff', password='password')
@@ -185,7 +185,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         response = self.client.get(
             f'/dummy_member/{self.seminar_private.uuid}/'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_member_access_member_user_public(self):
         """
@@ -292,7 +292,7 @@ class LoginMemberRequiredMixinTests(TestCase):
 
     def test_member_access_file_staff_user_public(self):
         """
-        スタッフユーザーはファイルにアクセスできることをテストする
+        スタッフユーザーはファイルにアクセスできないことをテストする
         """
         # スタッフユーザーでログイン
         self.client.login(username='staff', password='password')
@@ -301,11 +301,11 @@ class LoginMemberRequiredMixinTests(TestCase):
         response = self.client.get(
             f'/dummy_file/{self.file_public.uuid}/'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_member_access_file_staff_user_private(self):
         """
-        スタッフユーザーは非公開セミナーのファイルにもアクセスできることをテストする
+        スタッフユーザーは非公開セミナーのファイルにもアクセスできないことをテストする
         """
         # スタッフユーザーでログイン
         self.client.login(username='staff', password='password')
@@ -314,7 +314,7 @@ class LoginMemberRequiredMixinTests(TestCase):
         response = self.client.get(
             f'/dummy_file/{self.file_private.uuid}/'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_member_access_file_member_user(self):
         """
@@ -458,24 +458,24 @@ class LoginManagerRequiredMixinTests(TestCase):
 
     def test_manager_access_staff_user_public(self):
         """
-        スタッフユーザーはアクセスできることをテストする
+        スタッフユーザーはアクセスできないことをテストする
         """
         # スタッフユーザーでログイン
         self.client.login(username='staff', password='password')
 
         # マネージャービューにアクセス
         response = self.client.get('/dummy_manager/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
         # マネージャービューにセミナーIDを指定してアクセス
         response = self.client.get(
             f'/dummy_manager/{self.seminar_public.uuid}/'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_access_staff_user_private(self):
         """
-        スタッフユーザーは非公開セミナーにもアクセスできることをテストする
+        スタッフユーザーは非公開セミナーにもアクセスできないことをテストする
         """
         # スタッフユーザーでログイン
         self.client.login(username='staff', password='password')
@@ -484,7 +484,7 @@ class LoginManagerRequiredMixinTests(TestCase):
         response = self.client.get(
             f'/dummy_manager/{self.seminar_private.uuid}/'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_access_member_user(self):
         """

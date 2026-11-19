@@ -19,29 +19,29 @@ class BaseAuthorizationMixinTests(TestCase):
             public=True
         )
 
-    def test_is_superuser_or_staff_superuser(self):
+    def test_is_superuser_superuser(self):
         '''
-        is_superuser_or_staffメソッドのテスト（スーパーユーザーの場合）
+        is_superuserメソッドのテスト（スーパーユーザーの場合）
         '''
         # スーパーユーザーの場合
         superuser = User(is_superuser=True, is_staff=False)
-        self.assertTrue(self.mixin.is_superuser_or_staff(superuser))
+        self.assertTrue(self.mixin.is_superuser(superuser))
 
-    def test_is_superuser_or_staff_staff(self):
+    def test_is_superuser_staff(self):
         '''
-        is_superuser_or_staffメソッドのテスト（スタッフユーザーの場合）
+        is_superuserメソッドのテスト（スタッフユーザーの場合）
         '''
         # スタッフユーザーの場合
         staff = User(is_superuser=False, is_staff=True)
-        self.assertTrue(self.mixin.is_superuser_or_staff(staff))
+        self.assertFalse(self.mixin.is_superuser(staff))
 
-    def test_is_superuser_or_staff_normal_user(self):
+    def test_is_superuser_normal_user(self):
         '''
-        is_superuser_or_staffメソッドのテスト（通常ユーザーの場合）
+        is_superuserメソッドのテスト（通常ユーザーの場合）
         '''
         # 通常ユーザーの場合
         normal_user = User(is_superuser=False, is_staff=False)
-        self.assertFalse(self.mixin.is_superuser_or_staff(normal_user))
+        self.assertFalse(self.mixin.is_superuser(normal_user))
 
     def test_is_member_member(self):
         '''
@@ -158,7 +158,7 @@ class MemberAuthorizationMixinTests(TestCase):
         '''
         is_member_accessメソッドのテスト（スタッフユーザーの場合）
         '''
-        self.assertTrue(
+        self.assertFalse(
             self.mixin.is_member_access(self.staff)
         )
 
@@ -166,7 +166,7 @@ class MemberAuthorizationMixinTests(TestCase):
         '''
         is_member_accessメソッドのテスト（スタッフユーザーの場合，公開セミナー）
         '''
-        self.assertTrue(
+        self.assertFalse(
             self.mixin.is_member_access(self.staff, self.seminar_public)
         )
 
@@ -174,7 +174,7 @@ class MemberAuthorizationMixinTests(TestCase):
         '''
         is_member_accessメソッドのテスト（スタッフユーザーの場合，非公開セミナー）
         '''
-        self.assertTrue(
+        self.assertFalse(
             self.mixin.is_member_access(self.staff, self.seminar_private)
         )
 
@@ -333,7 +333,7 @@ class ManagerAuthorizationMixinTests(TestCase):
         '''
         is_manager_accessメソッドのテスト（スタッフユーザーの場合）
         '''
-        self.assertTrue(
+        self.assertFalse(
             self.mixin.is_manager_access(self.staff)
         )
 
@@ -341,7 +341,7 @@ class ManagerAuthorizationMixinTests(TestCase):
         '''
         is_manager_accessメソッドのテスト（スタッフユーザーの場合，公開セミナー）
         '''
-        self.assertTrue(
+        self.assertFalse(
             self.mixin.is_manager_access(self.staff, self.seminar_public)
         )
 
@@ -349,7 +349,7 @@ class ManagerAuthorizationMixinTests(TestCase):
         '''
         is_manager_accessメソッドのテスト（スタッフユーザーの場合，非公開セミナー）
         '''
-        self.assertTrue(
+        self.assertFalse(
             self.mixin.is_manager_access(self.staff, self.seminar_private)
         )
 

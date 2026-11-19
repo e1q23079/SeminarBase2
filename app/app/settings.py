@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from dotenv import load_dotenv
+import sys
 import os
 
 load_dotenv()
@@ -154,3 +155,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # ファイルアップロードのサイズ制限（100MB）
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+
+# メンテナンスモードの設定
+MAINTENANCE_MODE_IGNORE_SUPERUSER = True
+MAINTENANCE_MODE_IGNORE_STAFF = True
+MAINTENANCE_MODE_IGNORE_URLS = [
+    r'^/adminlogin/$'
+]
+
+# メンテナンスモードのファイル
+MAINTENANCE_MODE_STATE_FILE_PATH = BASE_DIR / 'config' / 'maintenance_mode_state.txt'  # noqa: E501
+
+# テスト中はメンテナンスモードを解除する
+if 'test' in sys.argv:
+    MAINTENANCE_MODE = False
