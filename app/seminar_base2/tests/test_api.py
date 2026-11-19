@@ -90,10 +90,7 @@ class RequestHashAPITests(TestCase):
         response = self.client.get(
             f'/api/manager/request_hash/{self.seminar1.uuid}'
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = response.json()
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_request_view_login_not_manager(self):
         '''
@@ -170,10 +167,7 @@ class RequestHashAPITests(TestCase):
         response = self.client.get(
             f'/api/manager/request_hash/{self.seminar3.uuid}'
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
-        data = response.json()
-        self.assertEqual(data['status'], 'success')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_request_view_no_manage(self):
         '''

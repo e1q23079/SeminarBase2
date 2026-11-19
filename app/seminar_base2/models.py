@@ -125,11 +125,11 @@ class Members(models.Model):
 
         ordering = ['user__username']
 
-    # スタッフユーザーやスーパーユーザーを除外
+    # スーパーユーザーを除外
     def clean(self):
-        if self.user.is_staff or self.user.is_superuser:
+        if self.user.is_superuser:
             raise ValidationError(
-                "スタッフユーザーとスーパーユーザーは受講者として追加することはできません。"  # noqa: E501
+                "スーパーユーザーは受講者として追加することはできません。"  # noqa: E501
             )
         super().clean()
 
@@ -186,10 +186,10 @@ class Manager(models.Model):
         # if not self.seminar.manage:
         #     raise ValidationError("このセミナーは管理モードではありません。")
 
-        # スタッフユーザーやスーパーユーザーを除外
-        if self.user.is_staff or self.user.is_superuser:
+        # スーパーユーザーを除外
+        if self.user.is_superuser:
             raise ValidationError(
-                "スタッフユーザーとスーパーユーザーはマネージャーとして追加することはできません。"  # noqa: E501
+                "スーパーユーザーはマネージャーとして追加することはできません。"  # noqa: E501
             )
         super().clean()
 

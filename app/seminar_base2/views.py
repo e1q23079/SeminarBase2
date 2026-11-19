@@ -56,8 +56,8 @@ class SeminarListView(LoginRequiredMixin, MemberAuthorizationMixin, View):
                 |
                 Q(description__icontains=query)
             )
-        # 公開セミナーのみを表示する（管理者・スタッフは除く）
-        if not self.is_superuser_or_staff(request.user):
+        # 公開セミナーのみを表示する（管理者は除く）
+        if not self.is_superuser(request.user):
             seminars = seminars.filter(public=True)
         # アクセス権限を判定してセミナーオブジェクトに属性を追加
         for seminar in seminars:

@@ -203,8 +203,7 @@ class LectureListViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/lecture/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'lecture_list.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_lecture_list_view_login_not_member(self):
         '''
@@ -333,8 +332,7 @@ class LectureListViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/lecture/{self.seminar3.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'lecture_list.html')
+        self.assertEqual(response.status_code, 403)
 
 
 # ドキュメントのビューテスト
@@ -399,8 +397,7 @@ class DocumentViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/doc/{self.seminar1.uuid}?lec=1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'document.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_doc_view_login_not_member(self):
         '''
@@ -565,8 +562,7 @@ class DocumentViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/doc/{self.seminar3.uuid}?lec=1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'document.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_doc_view_private_seminar(self):
         '''
@@ -726,12 +722,10 @@ class PrintViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/print/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'print.html')
+        self.assertEqual(response.status_code, 403)
 
         response = self.client.get(f'/print/{self.seminar1.uuid}?lec=1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'print.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_print_view_login_not_member(self):
         '''
@@ -856,12 +850,10 @@ class PrintViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/print/{self.seminar3.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'print.html')
+        self.assertEqual(response.status_code, 403)
 
         response = self.client.get(f'/print/{self.seminar3.uuid}?lec=1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'print.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_print_view_private_seminar(self):
         '''
@@ -959,7 +951,7 @@ class ProtectFileTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/file/{self.file.uuid}')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_protect_file_login_not_member(self):
         '''
@@ -1039,7 +1031,7 @@ class ProtectFileTests(TestCase):
         )
         self.client.login(username='staffuser', password='staffpassword')
         response = self.client.get(f'/file/{self.file.uuid}')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_protect_file_private_seminar(self):
         '''
@@ -1125,8 +1117,7 @@ class ManagerListViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get('/manager')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manage_list.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_list_view_login(self):
         '''
@@ -1224,8 +1215,7 @@ class ManagerViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/manager/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_view_login_not_manager(self):
         '''
@@ -1288,8 +1278,7 @@ class ManagerViewTests(TestCase):
         )
         self.client.login(username='staffuser', password='staffpassword')
         response = self.client.get(f'/manager/{self.seminar3.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_view_no_manage(self):
         '''
@@ -1374,8 +1363,7 @@ class ManagerProgressViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/manager/progress/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager_progress.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_progress_view_login_not_manager(self):
         '''
@@ -1438,8 +1426,7 @@ class ManagerProgressViewTests(TestCase):
         )
         self.client.login(username='staffuser', password='staffpassword')
         response = self.client.get(f'/manager/progress/{self.seminar3.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager_progress.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_progress_view_no_manage(self):
         '''
@@ -1524,8 +1511,7 @@ class ManagerRequestViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/manager/request/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager_request.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_request_view_login_not_manager(self):
         '''
@@ -1588,8 +1574,7 @@ class ManagerRequestViewTests(TestCase):
         )
         self.client.login(username='staffuser', password='staffpassword')
         response = self.client.get(f'/manager/request/{self.seminar3.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager_request.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_request_view_no_manage(self):
         '''
@@ -1706,9 +1691,9 @@ class ManagerRequestResetViewTests(TestCase):
         response = self.client.post(
             f'/manager/request/reset/{self.seminar1.uuid}/{self.user.username}'
         )
-        self.assertEqual(response.status_code, 302)
-        member = Members.objects.get(user=self.user, seminar=self.seminar1)
-        self.assertFalse(member.request)
+        self.assertEqual(response.status_code, 403)
+        member = Members.objects.get(user=self.user, seminar=self.seminar3)
+        self.assertTrue(member.request)
 
     def test_manager_request_view_login_not_manager(self):
         '''
@@ -1787,9 +1772,9 @@ class ManagerRequestResetViewTests(TestCase):
         response = self.client.post(
             f'/manager/request/reset/{self.seminar3.uuid}/{self.user.username}'
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         member = Members.objects.get(user=self.user, seminar=self.seminar3)
-        self.assertFalse(member.request)
+        self.assertTrue(member.request)
 
     def test_manager_request_view_no_manage(self):
         '''
@@ -1884,8 +1869,7 @@ class ManagerRequestRealtimeViewTests(TestCase):
         response = self.client.get(
             f'/manager/request/realtime/{self.seminar1.uuid}'
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager_request_realtime.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_progress_view_login_not_manager(self):
         '''
@@ -1958,8 +1942,7 @@ class ManagerRequestRealtimeViewTests(TestCase):
         response = self.client.get(
             f'/manager/request/realtime/{self.seminar3.uuid}'
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manager_request_realtime.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_manager_progress_view_no_manage(self):
         '''
@@ -2092,7 +2075,7 @@ class JoinViewTests(TestCase):
         )
         self.client.login(username='staffuser', password='staffpassword')
         response = self.client.get(f'/lecture/join/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_join_view_superuser_private_seminar(self):
         '''
@@ -2116,7 +2099,7 @@ class JoinViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/lecture/join/{self.seminar3.uuid}')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_join_view_superuser_no_manage(self):
         '''
@@ -2140,7 +2123,7 @@ class JoinViewTests(TestCase):
         self.client.login(username='staffuser', password='staffpassword')
 
         response = self.client.get(f'/lecture/join/{self.seminar4.uuid}')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_join_view_login_not_manager(self):
         '''
@@ -2657,8 +2640,7 @@ class JoinManageViewTests(TestCase):
         )
         self.client.login(username='staffuser', password='staffpassword')
         response = self.client.get(f'/manager/join/{self.seminar1.uuid}')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'manage_join.html')
+        self.assertEqual(response.status_code, 403)
 
     def test_join_manage_view_login_not_manager(self):
         '''
@@ -2799,7 +2781,7 @@ class JoinManageResetViewTests(TestCase):
         response = self.client.post(
             f'/manager/join/reset/{self.seminar1.uuid}/{self.sample_user.username}'  # noqa: E501
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
     def test_join_manage_reset_view_login_not_manager(self):
         '''

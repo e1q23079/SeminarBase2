@@ -4,11 +4,14 @@ from ..models import Seminar, Members, Manager
 
 # ベースミックスイン
 class BaseAuthorizationMixin():
-    def is_superuser_or_staff(self, user: User):
+    """
+    認証関連の基本機能を提供するミックスイン
+    """
+    def is_superuser(self, user: User):
         """
-        ユーザーがスーパーユーザーまたはスタッフユーザーであるかを判定するメソッド
+        ユーザーがスーパーユーザーであるかを判定するメソッド
         """
-        return user.is_superuser or user.is_staff
+        return user.is_superuser
 
     def is_member(self, user: User, seminar: Seminar = None):
         """
@@ -33,8 +36,8 @@ class MemberAuthorizationMixin(BaseAuthorizationMixin):
         """
         参加者認証のロジックを定義するメソッド
         """
-        # 管理者・スタッフはアクセス許可する
-        if self.is_superuser_or_staff(user):
+        # 管理者はアクセス許可する
+        if self.is_superuser(user):
             return True
 
         # 非公開の場合アクセス拒否する
@@ -59,8 +62,8 @@ class ManagerAuthorizationMixin(BaseAuthorizationMixin):
         """
         マネージャー認証のロジックを定義するメソッド
         """
-        # 管理者・スタッフはアクセス許可する
-        if self.is_superuser_or_staff(user):
+        # 管理者はアクセス許可する
+        if self.is_superuser(user):
             return True
 
         # 非公開の場合アクセス拒否する
