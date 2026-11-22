@@ -181,3 +181,7 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",  # noqa: E501
     },
 }
+
+if "test" in sys.argv:
+    STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"  # noqa: E501
+    STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"  # noqa: E501
