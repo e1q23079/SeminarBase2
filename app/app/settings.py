@@ -170,3 +170,18 @@ MAINTENANCE_MODE_STATE_FILE_PATH = BASE_DIR / 'config' / 'maintenance_mode_state
 # テスト中はメンテナンスモードを解除する
 if 'test' in sys.argv:
     MAINTENANCE_MODE = False
+
+
+# ストレージ
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",  # noqa: E501
+    },
+}
+
+if "test" in sys.argv:
+    STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"  # noqa: E501
+    STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"  # noqa: E501
