@@ -288,3 +288,34 @@ class NoSettingPermission(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+# ワンタイムパスワードモデル
+class OneTimePassword(models.Model):
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="ユーザー"
+    )
+
+    secret_key = models.CharField(max_length=32, verbose_name="シークレットキー")
+
+    last_used_code = models.CharField(
+        max_length=6,
+        verbose_name="最後に使用したコード",
+        blank=True, null=True
+    )
+    is_enabled = models.BooleanField(default=False, verbose_name="有効化")
+
+    # フルネームを表示するためのメソッド
+    def full_name(self):
+        return f"{self.user.last_name} {self.user.first_name}"
+    full_name.short_description = "名前"
+
+    class Meta:
+        verbose_name = "ワンタイムパスワード"
+        verbose_name_plural = "「ワンタイムパスワード」 一覧"
+
+    def __str__(self):
+        return self.user.username

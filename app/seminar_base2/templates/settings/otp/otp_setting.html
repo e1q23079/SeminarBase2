@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}設定 - ワンタイムパスワードを{{ action }}する{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>ワンタイムパスワードを{{ action }}する</h1>
+<p>アカウントのワンタイムパスワードを{{ action }}します。</p>
+<p class="back-link"><a href="/settings/otp">戻る</a></p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label for="otp_secret_key" class="form-label">シークレットキー</label>
+        <input type="text" class="form-control" value="{{ otp_secret_key }}" readonly>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">ワンタイムパスワード</label>
+        <input type="text" class="form-control {% if error_message %}is-invalid{% endif %}" name="otp_code" required>
+        <div class="invalid-feedback">{{ error_message }}</div>
+    </div>
+
+    <div class="text-center mt-4">
+        {% if action == "削除" %}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal">{{ action }}する</button>
+        {% else %}
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal">{{ action }}にする</button>
+        {% endif %}
+    </div>
+
+    {% if action == "有効" %}
+        {% include "components/modal.html" with modal_message="本当にワンタイムパスワードを有効にしますか？" btn_type="submit" %}
+    {% elif action == "無効" %}
+        {% include "components/modal.html" with modal_message="本当にワンタイムパスワードを無効にしますか？" btn_type="submit" %}
+    {% elif action == "削除" %}
+        {% include "components/modal.html" with modal_message="本当にワンタイムパスワードを削除しますか？" btn_type="submit" %}
+    {% endif %}
+
+</form>
+
+{% endblock %}

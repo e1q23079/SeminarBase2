@@ -1,0 +1,7 @@
+{% if status %}
+    <p><a href="/settings/otp/disable" class="title">ワンタイムパスワードを無効にする</a></p>
+    <p class="description">アカウントのワンタイムパスワードを無効にします。</p>
+{% else %}
+    <p><span class="disabled-title disabled-text">ワンタイムパスワードを無効にする</span></p>
+    <p class="description disabled-text">アカウントのワンタイムパスワードを無効にします。</p>
+{% endif %}

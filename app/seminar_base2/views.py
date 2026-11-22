@@ -1,7 +1,10 @@
+from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.views import View
-from .models import Seminar, File, Members, ResetRequest, NoSettingPermission
+from .models import (
+    Seminar, File, Members, ResetRequest, NoSettingPermission, OneTimePassword
+)
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -15,6 +18,8 @@ from django.http import (
     Http404, HttpResponse, FileResponse
 )
 from .lib.doc import Doc
+from .lib.otpauth import OTPAuth
+from .lib.redirecturlvalid import is_valid_redirect_url
 from .lib.join import get_join_valid_until, is_join_valid
 from .lib.authorization import MemberAuthorizationMixin
 from .lib.login import LoginMemberRequiredMixin, LoginManagerRequiredMixin
@@ -690,3 +695,286 @@ class SettingPasswordView(LoginRequiredMixin, View):
         else:
             # データが無効な場合はエラーメッセージを表示
             return render(request, 'settings/password.html', {'form': form})
+
+
+# ワンタイムパスワード設定メニュー
+class SettingOTPMenuView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # ワンタイムパスワード設定メニューをレンダリング
+        opt_auth = OTPAuth(request)
+        is_enabled = opt_auth.is_otp_enabled()
+        is_secret_key_set = opt_auth.is_otp_secret_key_set()
+        return render(
+            request,
+            'settings/otp/otp_menu.html',
+            {
+                'is_enabled': is_enabled,
+                'is_secret_key_set': is_secret_key_set
+            }
+        )
+
+
+# ワンタイムパスワードシークレットキー取得を取得するためのビュー
+class SettingOTPShowSecretKeyView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # ワンタイムパスワードシークレットキー取得ページをレンダリング
+        opt_auth = OTPAuth(request)
+        qr_code, otp_secret_key = opt_auth.get_otp()
+        return render(
+            request,
+            'settings/otp/otp_show_secret_key.html',
+            {
+                'qr_code': qr_code,
+                'otp_secret_key': otp_secret_key
+            }
+        )
+
+
+# ワンタイムパスワードを有効にするためのビュー
+class SettingOTPEnabledView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        # ワンタイムパスワードがすでに有効化されている場合はアクセスを拒否
+        opt_auth = OTPAuth(request)
+        if opt_auth.is_otp_enabled():
+            raise PermissionDenied()
+        # シークレットキーが設定されていない場合はアクセスを拒否
+        if not opt_auth.is_otp_secret_key_set():
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # ワンタイムパスワード有効化ページをレンダリング
+        opt_auth = OTPAuth(request)
+        _, otp_secret_key = opt_auth.get_otp()
+        return render(
+            request,
+            'settings/otp/otp_setting.html',
+            {
+                'otp_secret_key': otp_secret_key,
+                'action': '有効'
+            }
+        )
+
+    def post(self, request):
+        # フォームからデータを取得
+        otp_code = request.POST.get('otp_code')
+        opt_auth = OTPAuth(request)
+        is_authenticated, error_message = opt_auth.verify_otp(otp_code)
+        if is_authenticated:
+            opt_auth.enable_otp()
+            return render(
+                request,
+                'settings/complete.html',
+                {'message': "ワンタイムパスワードの有効化", 'link': '/settings/otp'}
+            )
+        else:
+            qr_code, otp_secret_key = opt_auth.get_otp()
+            return render(
+                request,
+                'settings/otp/otp_setting.html',
+                {
+                    'error_message': error_message,
+                    'qr_code': qr_code,
+                    'otp_secret_key': otp_secret_key,
+                    'action': '有効'
+                }
+            )
+
+
+# ワンタイムパスワードを無効にするためのビュー
+class SettingOTPDisabledView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        # ワンタイムパスワードがすでに無効化されている場合はアクセスを拒否
+        opt_auth = OTPAuth(request)
+        if not opt_auth.is_otp_enabled():
+            raise PermissionDenied()
+        # シークレットキーが設定されていない場合はアクセスを拒否
+        if not opt_auth.is_otp_secret_key_set():
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # ワンタイムパスワード無効化ページをレンダリング
+        opt_auth = OTPAuth(request)
+        _, otp_secret_key = opt_auth.get_otp()
+        return render(
+            request,
+            'settings/otp/otp_setting.html',
+            {
+                'otp_secret_key': otp_secret_key,
+                'action': '無効'
+            }
+        )
+
+    def post(self, request):
+        # フォームからデータを取得
+        otp_code = request.POST.get('otp_code')
+        opt_auth = OTPAuth(request)
+        is_authenticated, error_message = opt_auth.verify_otp(otp_code)
+        if is_authenticated:
+            opt_auth.disable_otp()
+            return render(
+                request,
+                'settings/complete.html',
+                {'message': "ワンタイムパスワードの無効化", 'link': '/settings/otp'}
+            )
+        else:
+            qr_code, otp_secret_key = opt_auth.get_otp()
+            return render(
+                request,
+                'settings/otp/otp_setting.html',
+                {
+                    'error_message': error_message,
+                    'qr_code': qr_code,
+                    'otp_secret_key': otp_secret_key,
+                    'action': '無効'
+                }
+            )
+
+
+# ワンタイムパスワードのシークレットキーを削除するためのビュー
+class SettingOTPDeleteView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # 設定権限がない場合はアクセスを拒否
+        no_setting_permission = NoSettingPermission.objects.filter(
+            user=request.user
+        ).exists()
+        if no_setting_permission:
+            raise PermissionDenied()
+        # ワンタイムパスワードがすでに削除されている場合はアクセスを拒否
+        opt_auth = OTPAuth(request)
+        if not opt_auth.is_otp_secret_key_set():
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # ワンタイムパスワード削除ページをレンダリング
+        opt_auth = OTPAuth(request)
+        _, otp_secret_key = opt_auth.get_otp()
+        return render(
+            request,
+            'settings/otp/otp_setting.html',
+            {
+                'otp_secret_key': otp_secret_key,
+                'action': '削除'
+            }
+        )
+
+    def post(self, request):
+        # フォームからデータを取得
+        otp_code = request.POST.get('otp_code')
+        opt_auth = OTPAuth(request)
+        is_authenticated, error_message = opt_auth.verify_otp(otp_code)
+        if is_authenticated:
+            opt_auth.delete_otp()
+            return render(
+                request,
+                'settings/complete.html',
+                {'message': "ワンタイムパスワードの削除", 'link': '/settings/otp'}
+            )
+        else:
+            qr_code, otp_secret_key = opt_auth.get_otp()
+            return render(
+                request,
+                'settings/otp/otp_setting.html',
+                {
+                    'error_message': error_message,
+                    'qr_code': qr_code,
+                    'otp_secret_key': otp_secret_key,
+                    'action': '削除'
+                }
+            )
+
+
+# ワンタイムパスワード認証
+class OTPAuthenticationView(LoginRequiredMixin, View):
+    def dispatch(self, request, *args, **kwargs):
+        # ログインしていない場合はアクセスを許可
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        # ワンタイムパスワードが設定されていない場合はアクセスを拒否
+        otp_obj = OneTimePassword.objects.filter(user=request.user).first()
+        if not otp_obj or not otp_obj.is_enabled:
+            raise PermissionDenied("ワンタイムパスワードが設定されていません。")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        # ワンタイムパスワード認証ページをレンダリング
+        username = request.user.username if request.user.is_authenticated else None  # noqa: E501
+        return render(request, 'otp_auth.html', {'username': username})
+
+    def post(self, request):
+        # フォームからデータを取得
+        otp_code = request.POST.get('otp_code')
+        opt_auth = OTPAuth(request)
+        (
+            is_authenticated,
+            error_message,
+            error_code
+        ) = opt_auth.authenticate(otp_code)
+        if is_authenticated:
+            next_url = request.GET.get('next', '/')
+            next_url = is_valid_redirect_url(next_url, request)
+            return redirect(next_url)
+        else:
+            # ワンタイムパスワードが間違っている場合はエラーメッセージを表示
+            if error_code == 'otp_max_attempts_exceeded':
+                messages.error(
+                    request,
+                    "ワンタイムパスワードの入力回数が上限に達しました。再度ログインしてください。"
+                )
+                return redirect('login')
+            username = request.user.username if request.user.is_authenticated else None  # noqa: E501
+            return render(
+                request,
+                'otp_auth.html',
+                {
+                    'username': username,
+                    'error_message': error_message
+                }
+            )

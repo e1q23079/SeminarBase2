@@ -133,7 +133,37 @@ urlpatterns = [
             'settings/password',
             views.SettingPasswordView.as_view(),
             name='setting_password'
-        )
+        ),
+    path(
+            'accounts/otp/auth',
+            views.OTPAuthenticationView.as_view(),
+            name='otp_auth'
+        ),
+    path(
+            'settings/otp',
+            views.SettingOTPMenuView.as_view(),
+            name='setting_otp_menu'
+        ),
+    path(
+            'settings/otp/get/secret_key',
+            views.SettingOTPShowSecretKeyView.as_view(),
+            name='setting_otp_show_secret_key'
+        ),
+    path(
+            'settings/otp/enable',
+            views.SettingOTPEnabledView.as_view(),
+            name='setting_otp_enabled'
+        ),
+    path(
+            'settings/otp/disable',
+            views.SettingOTPDisabledView.as_view(),
+            name='setting_otp_disabled'
+        ),
+    path(
+            'settings/otp/delete',
+            views.SettingOTPDeleteView.as_view(),
+            name='setting_otp_delete'
+        ),
 ]
 
 if settings.DEBUG:

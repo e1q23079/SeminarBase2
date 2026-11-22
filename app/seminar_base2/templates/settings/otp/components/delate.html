@@ -1,0 +1,7 @@
+{% if status %}
+    <p><a href="/settings/otp/delete" class="title">シークレットキーを削除する</a></p>
+    <p class="description">アカウントのシークレットキーを削除します。</p>
+{% else %}
+    <p><span class="disabled-title disabled-text">シークレットキーを削除する</span></p>
+    <p class="description disabled-text">アカウントのシークレットキーを削除します。</p>
+{% endif %}

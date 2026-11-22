@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}設定 - ワンタイムパスワードを設定する{% endblock %}
+
+{% block css %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+{% endblock %}
+
+{% block navbar %}
+    {% include "components/navbar.html" %}
+{% endblock %}
+
+{% block content %}
+<h1>ワンタイムパスワードを設定する</h1>
+<p>アカウントのワンタイムパスワードを設定します。</p>
+<p class="back-link"><a href="/settings">戻る</a></p>
+
+<p><a href="/settings/otp/get/secret_key" class="title">シークレットキーを取得する</a></p>
+<p class="description">アカウントのシークレットキーを取得します。</p>
+
+{% if is_secret_key_set %}
+
+    {% if is_enabled %}
+        <!-- 有効：無効にする -->
+        {% include "settings/otp/components/enabled.html" with status=False %}
+        {% include "settings/otp/components/disabled.html" with status=True %}
+    {% else %}
+        <!-- 無効：有効にする -->
+        {% include "settings/otp/components/enabled.html" with status=True %}
+        {% include "settings/otp/components/disabled.html" with status=False %}
+    {% endif %}
+
+    <!-- シークレットキーが設定されている場合は、削除のリンクを有効化 -->
+    {% include "settings/otp/components/delate.html" with status=True %}
+
+{% else %}
+    <!-- シークレットキーが設定されていない場合は、無効化と削除のリンクを無効化 -->
+    {% include "settings/otp/components/enabled.html" with status=False %}
+    {% include "settings/otp/components/disabled.html" with status=False %}
+    {% include "settings/otp/components/delate.html" with status=False %}
+
+{% endif %}
+
+{% endblock %}

@@ -6,7 +6,8 @@ from .models import (
     File,
     Manager,
     ResetRequest,
-    NoSettingPermission
+    NoSettingPermission,
+    OneTimePassword
 )
 from django.contrib.auth.admin import UserAdmin
 from django.utils.safestring import mark_safe
@@ -235,6 +236,31 @@ class ResetRequestAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ResetRequest, ResetRequestAdmin)
+
+
+# ワンタイムパスワードモデルの管理画面設定
+class OneTimePasswordAdmin(admin.ModelAdmin):
+    list_display = ('user', 'full_name', 'is_enabled')
+
+    readonly_fields = ('user',)
+
+    exclude = ('secret_key', 'last_used_code')  # secret_keyフィールドを管理画面から除外
+
+    autocomplete_fields = ['user']
+
+    ordering = ('user__username',)
+
+    # フルネームを表示するためのメソッド
+    def full_name(self, obj):
+        return f"{obj.user.last_name} {obj.user.first_name}"
+    full_name.short_description = "名前"
+
+    # 追加の禁止
+    def has_add_permission(self, request):
+        return False  # 新規追加を禁止
+
+
+admin.site.register(OneTimePassword, OneTimePasswordAdmin)
 
 # 管理サイトのタイトルを変更
 admin.site.site_header = "SeminarBase2 管理者サイト"
