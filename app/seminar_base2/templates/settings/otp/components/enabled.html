@@ -1,0 +1,7 @@
+{% if status %}
+    <p><a href="/settings/otp/enable" class="title">ワンタイムパスワードを有効にする</a></p>
+    <p class="description">アカウントのワンタイムパスワードを有効にします。</p>
+{% else %}
+    <p><span class="disabled-title disabled-text">ワンタイムパスワードを有効にする</span></p>
+    <p class="description disabled-text">アカウントのワンタイムパスワードを有効にします。</p>
+{% endif %}

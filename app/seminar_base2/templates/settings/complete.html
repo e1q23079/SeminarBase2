@@ -9,5 +9,5 @@
 {% block content %}
 <h1>設定</h1>
 <p>{{ message }}が完了しました。</p>
-<a href="/settings">戻る</a>
+<a href="{{ link | default:'/settings' }}">戻る</a>
 {% endblock %}

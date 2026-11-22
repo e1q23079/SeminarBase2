@@ -1,0 +1,35 @@
+{% extends "layout2.html" %}
+{% load static %}
+
+{% block title %}ログイン - OTP認証{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if error_message %}
+<div class="alert alert-danger" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <div class="login_form card">
+        <div class="mb-3 d-flex justify-content-center">
+            <img src="{% static 'img/logo2.png' %}" width="300px" alt="SeminarBase2ロゴ" class="image_icon">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">ユーザー名</label>
+            <input type="text" name="username" required class="form-control" value="{{ username }}" readonly>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">ワンタイムパスワード</label>
+            <input type="text" name="otp_code" required class="form-control" inputmode="numeric" pattern="[0-9]{6}" title="6桁の数字を入力してください" maxlength="6" minlength="6">
+        </div>
+        <div class="mb-3 d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary login_btn">認証</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

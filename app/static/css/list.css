@@ -21,3 +21,13 @@
     border-left: solid 5px #0D6EFD;
     width: auto;
 }
+
+.disabled-title {
+    padding: 0.125em 0.5em;
+    border-left: solid 5px gray;
+    width: auto;
+}
+
+.disabled-text {
+    color: gray;
+}
